@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
+import io from 'socket.io-client';
 
 const ChatList = ({ onSelectChat }) => {
   const [state, setState] = useState({
@@ -13,7 +14,6 @@ const ChatList = ({ onSelectChat }) => {
       try {
         const response = await fetch('http://localhost:3000/messages/recent');
         const data = await response.json();
-        console.log('Fetched chats:', data);
 
         if (data.status === 'success' && Array.isArray(data.messages)) {
           setState({ chats: data.messages, loading: false, error: null });
@@ -21,12 +21,28 @@ const ChatList = ({ onSelectChat }) => {
           throw new Error('Unexpected data format');
         }
       } catch (error) {
-        console.error('Error fetching chats:', error);
         setState({ chats: [], loading: false, error: 'Failed to fetch chats' });
       }
     };
 
     fetchChats();
+
+    const socket = io('http://localhost:3000');
+
+    socket.on('newMessage', (newMessage) => {
+      setState((prevState) => {
+        const updatedChats = prevState.chats.filter(chat => chat.sender !== newMessage.sender);
+        return {
+          chats: [newMessage, ...updatedChats],
+          loading: false,
+          error: null,
+        };
+      });
+    });
+
+    return () => {
+      socket.disconnect();
+    };
   }, []);
 
   const { chats, loading, error } = state;
@@ -40,7 +56,7 @@ const ChatList = ({ onSelectChat }) => {
   }
 
   return (
-    <div className="w-1/3 border-r border-gray-300 overflow-y-scroll">
+    <div className="w-1/3 border-r border-gray-300 overflow-y-scroll h-full">
       {chats.length === 0 ? (
         <div className="p-4">No chats available</div>
       ) : (

@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
+import io from 'socket.io-client';
 
 const ChatDetails = ({ chat }) => {
   const [state, setState] = useState({
@@ -9,19 +10,12 @@ const ChatDetails = ({ chat }) => {
 
   useEffect(() => {
     if (!chat) {
-      setState({ 
-        messages: [], 
-        error: null
-       });
+      setState({ messages: [], error: null });
       return;
     }
 
     const fetchMessages = async () => {
-      setState({ 
-        messages: [], 
-        error: null
-       });
-       
+      setState({ messages: [], error: null });
       try {
         const response = await fetch(`http://localhost:3000/messages?sender=${chat.sender}`);
         const data = await response.json();
@@ -37,6 +31,24 @@ const ChatDetails = ({ chat }) => {
     };
 
     fetchMessages();
+
+    const socket = io('http://localhost:3000');
+
+    socket.on('newMessage', (newMessage) => {
+      if (newMessage.sender === chat.sender) {
+        setState((prevState) => ({
+          messages: [...prevState.messages, newMessage],
+          error: null,
+        }));
+        // alert('New message received');
+        const audio = new Audio('/sound.mp3');
+        audio.play();
+      }
+    });
+
+    return () => {
+      socket.disconnect();
+    };
   }, [chat]);
 
   const { messages, error } = state;
@@ -52,7 +64,7 @@ const ChatDetails = ({ chat }) => {
   return (
     <div className="p-4 flex flex-col h-full">
       <h2 className="text-2xl font-bold mb-4">{chat.sender}</h2>
-      <div className="flex-grow overflow-y-auto">
+      <div className="flex-grow overflow-y-auto pr-4">
         {messages.length === 0 ? (
           <div className="mt-2">No messages available</div>
         ) : (
