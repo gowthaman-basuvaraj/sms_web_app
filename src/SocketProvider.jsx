@@ -42,8 +42,32 @@ export const SocketProvider = ({ children }) => {
         };
       });
 
+      // Play notification sound
       const audio = new Audio('/sound.mp3');
       audio.play();
+
+      // Show desktop notification
+      if (Notification.permission === 'granted') {
+        const notification = new Notification('New message received', {
+          body: `${newMessage.sender}: ${newMessage.text}`,
+        });
+
+        notification.onclick = () => {
+          window.focus();
+        };
+      } else if (Notification.permission !== 'denied') {
+        Notification.requestPermission().then(permission => {
+          if (permission === 'granted') {
+            const notification = new Notification('New message received', {
+              body: `${newMessage.sender}: ${newMessage.text}`,
+            });
+
+            notification.onclick = () => {
+              window.focus();
+            };
+          }
+        });
+      }
     });
 
     return () => {
