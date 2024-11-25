@@ -5,9 +5,11 @@ import io from "socket.io-client";
 import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
 
 const App = () => {
-  const [selectedChat, setSelectedChat] = useState(null);
-  const [socket, setSocket] = useState(null);
-  const [chats, setChats] = useState([]);
+  const [state, setState] = useState({
+    selectedChat: null,
+    chats: [],
+    socket: null,
+  });
 
   useEffect(() => {
     // Request notification permission
@@ -16,14 +18,14 @@ const App = () => {
     }
 
     const socketInstance = io("http://localhost:3000");
-    setSocket(socketInstance);
+    setState((prevState) => ({ ...prevState, socket: socketInstance }));
 
     socketInstance.on("newMessage", (newMessage) => {
-      setChats((prevChats) => {
-        const updatedChats = prevChats.filter(
+      setState((prevState) => {
+        const updatedChats = prevState.chats.filter(
           (chat) => chat.sender !== newMessage.sender
         );
-        return [newMessage, ...updatedChats];
+        return { ...prevState, chats: [newMessage, ...updatedChats] };
       });
 
       // Show desktop notification
@@ -33,7 +35,7 @@ const App = () => {
         });
 
         notification.onclick = () => {
-          setSelectedChat(newMessage);
+          setState((prevState) => ({ ...prevState, selectedChat: newMessage }));
           window.focus();
         };
       }
@@ -48,6 +50,10 @@ const App = () => {
     };
   }, []);
 
+  const handleSelectChat = (chat) => {
+    setState((prevState) => ({ ...prevState, selectedChat: chat }));
+  };
+
   return (
     <Router>
       <div className="flex h-screen">
@@ -57,11 +63,11 @@ const App = () => {
             element={
               <>
                 <ChatList
-                  chats={chats}
-                  onSelectChat={setSelectedChat}
-                  socket={socket}
+                  chats={state.chats}
+                  onSelectChat={handleSelectChat}
+                  socket={state.socket}
                 />
-                <ChatDetails chat={selectedChat} socket={socket} />
+                <ChatDetails chat={state.selectedChat} socket={state.socket} />
               </>
             }
           />
