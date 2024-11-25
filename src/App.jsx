@@ -1,7 +1,8 @@
-import { useState, useEffect } from 'react';
-import ChatList from './Component/ChatList';
-import ChatDetails from './Component/ChatDetails';
-import io from 'socket.io-client';
+import { useState, useEffect } from "react";
+import ChatList from "./Component/ChatList";
+import ChatDetails from "./Component/ChatDetails";
+import io from "socket.io-client";
+import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
 
 const App = () => {
   const [selectedChat, setSelectedChat] = useState(null);
@@ -10,22 +11,24 @@ const App = () => {
 
   useEffect(() => {
     // Request notification permission
-    if (Notification.permission !== 'granted') {
+    if (Notification.permission !== "granted") {
       Notification.requestPermission();
     }
 
-    const socketInstance = io('http://localhost:3000');
+    const socketInstance = io("http://localhost:3000");
     setSocket(socketInstance);
 
-    socketInstance.on('newMessage', (newMessage) => {
+    socketInstance.on("newMessage", (newMessage) => {
       setChats((prevChats) => {
-        const updatedChats = prevChats.filter(chat => chat.sender !== newMessage.sender);
+        const updatedChats = prevChats.filter(
+          (chat) => chat.sender !== newMessage.sender
+        );
         return [newMessage, ...updatedChats];
       });
 
       // Show desktop notification
-      if (Notification.permission === 'granted') {
-        const notification = new Notification('New message received', {
+      if (Notification.permission === "granted") {
+        const notification = new Notification("New message received", {
           body: `${newMessage.sender}: ${newMessage.text}`,
         });
 
@@ -36,7 +39,7 @@ const App = () => {
       }
 
       // Play notification sound
-      const audio = new Audio('/sound.mp3');
+      const audio = new Audio("/sound.mp3");
       audio.play();
     });
 
@@ -46,10 +49,25 @@ const App = () => {
   }, []);
 
   return (
-    <div className="flex h-screen">
-      <ChatList chats={chats} onSelectChat={setSelectedChat} socket={socket} />
-      <ChatDetails chat={selectedChat} socket={socket} />
-    </div>
+    <Router>
+      <div className="flex h-screen">
+        <Routes>
+          <Route
+            path="/"
+            element={
+              <>
+                <ChatList
+                  chats={chats}
+                  onSelectChat={setSelectedChat}
+                  socket={socket}
+                />
+                <ChatDetails chat={selectedChat} socket={socket} />
+              </>
+            }
+          />
+        </Routes>
+      </div>
+    </Router>
   );
 };
 

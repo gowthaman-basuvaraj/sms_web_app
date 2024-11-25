@@ -32,6 +32,7 @@ const ChatList = ({ onSelectChat, socket }) => {
           loading: false,
           error: 'Failed to fetch chats',
         }));
+        console.error(error);
       }
     };
 
