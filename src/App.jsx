@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
-import ChatList from './ChatList';
-import ChatDetails from './ChatDeatils';
+import ChatList from './Component/ChatList';
+import ChatDetails from './Component/ChatDetails';
 import io from 'socket.io-client';
 
 const App = () => {

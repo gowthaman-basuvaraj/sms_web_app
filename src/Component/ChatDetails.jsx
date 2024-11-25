@@ -29,6 +29,7 @@ const ChatDetails = ({ chat, socket }) => {
           messages: [], 
           error: 'Failed to fetch messages'
           });
+          console.error('Failed to fetch messages:', error);
       }
     };
 

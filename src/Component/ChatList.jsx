@@ -21,6 +21,7 @@ const ChatList = ({ onSelectChat, socket, chats }) => {
         }
       } catch (error) {
         setState({ chats: [], loading: false, error: 'Failed to fetch chats' });
+        console.error('Failed to fetch chats:', error);
       }
     };
 
