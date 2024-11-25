@@ -3,6 +3,7 @@ import ChatList from "./Component/ChatList";
 import ChatDetails from "./Component/ChatDetails";
 import io from "socket.io-client";
 import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
+import Login from "./Component/Login";
 
 const App = () => {
   const [selectedChat, setSelectedChat] = useState(null);
@@ -52,6 +53,7 @@ const App = () => {
     <Router>
       <div className="flex h-screen">
         <Routes>
+          <Route path="/login" element={<Login />} />
           <Route
             path="/"
             element={
