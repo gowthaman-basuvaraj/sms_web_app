@@ -1,11 +1,12 @@
 import { useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
 
-const ChatList = ({ onSelectChat, socket, chats }) => {
+const ChatList = ({ onSelectChat, socket }) => {
   const [state, setState] = useState({
     chats: [],
     loading: true,
     error: null,
+    searchQuery: '',
   });
 
   useEffect(() => {
@@ -15,13 +16,22 @@ const ChatList = ({ onSelectChat, socket, chats }) => {
         const data = await response.json();
 
         if (data.status === 'success' && Array.isArray(data.messages)) {
-          setState({ chats: data.messages, loading: false, error: null });
+          setState((prevState) => ({
+            ...prevState,
+            chats: data.messages,
+            loading: false,
+            error: null,
+          }));
         } else {
           throw new Error('Unexpected data format');
         }
       } catch (error) {
-        setState({ chats: [], loading: false, error: 'Failed to fetch chats' });
-        console.error('Failed to fetch chats:', error);
+        setState((prevState) => ({
+          ...prevState,
+          chats: [],
+          loading: false,
+          error: 'Failed to fetch chats',
+        }));
       }
     };
 
@@ -32,6 +42,7 @@ const ChatList = ({ onSelectChat, socket, chats }) => {
         setState((prevState) => {
           const updatedChats = prevState.chats.filter(chat => chat.sender !== newMessage.sender);
           return {
+            ...prevState,
             chats: [newMessage, ...updatedChats],
             loading: false,
             error: null,
@@ -47,22 +58,41 @@ const ChatList = ({ onSelectChat, socket, chats }) => {
     };
   }, [socket]);
 
-  const { chats: stateChats, loading, error } = state;
+  const handleSearchChange = (event) => {
+    setState((prevState) => ({
+      ...prevState,
+      searchQuery: event.target.value,
+    }));
+  };
 
-  if (loading) {
+  const filteredChats = state.chats.filter(chat =>
+    chat.sender.toLowerCase().includes(state.searchQuery.toLowerCase()) ||
+    chat.text.toLowerCase().includes(state.searchQuery.toLowerCase())
+  );
+
+  if (state.loading) {
     return <div className="p-4">Loading chats...</div>;
   }
 
-  if (error) {
-    return <div className="p-4">{error}</div>;
+  if (state.error) {
+    return <div className="p-4">{state.error}</div>;
   }
 
   return (
     <div className="w-1/3 border-r border-gray-300 overflow-y-scroll h-full">
-      {stateChats.length === 0 ? (
+      <div className="p-4">
+        <input
+          type="text"
+          placeholder="Search chats..."
+          value={state.searchQuery}
+          onChange={handleSearchChange}
+          className="w-full p-2 border border-gray-300 rounded"
+        />
+      </div>
+      {filteredChats.length === 0 ? (
         <div className="p-4">No chats available</div>
       ) : (
-        stateChats.map((chat) => (
+        filteredChats.map((chat) => (
           <div
             key={chat.id}
             onClick={() => onSelectChat(chat)}
@@ -79,7 +109,6 @@ const ChatList = ({ onSelectChat, socket, chats }) => {
 ChatList.propTypes = {
   onSelectChat: PropTypes.func.isRequired,
   socket: PropTypes.object,
-  chats: PropTypes.array.isRequired,
 };
 
 export default ChatList;
