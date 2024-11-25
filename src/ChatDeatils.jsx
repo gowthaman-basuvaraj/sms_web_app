@@ -1,8 +1,7 @@
 import { useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
-import io from 'socket.io-client';
 
-const ChatDetails = ({ chat }) => {
+const ChatDetails = ({ chat, socket }) => {
   const [state, setState] = useState({
     messages: [],
     error: null,
@@ -26,30 +25,32 @@ const ChatDetails = ({ chat }) => {
           throw new Error('Unexpected data format');
         }
       } catch (error) {
-        setState({ messages: [], error: 'Failed to fetch messages' });
+        setState({ 
+          messages: [], 
+          error: 'Failed to fetch messages'
+          });
       }
     };
 
     fetchMessages();
 
-    const socket = io('http://localhost:3000');
-
-    socket.on('newMessage', (newMessage) => {
-      if (newMessage.sender === chat.sender) {
-        setState((prevState) => ({
-          messages: [...prevState.messages, newMessage],
-          error: null,
-        }));
-        // alert('New message received');
-        const audio = new Audio('/sound.mp3');
-        audio.play();
-      }
-    });
+    if (socket) {
+      socket.on('newMessage', (newMessage) => {
+        if (newMessage.sender === chat.sender) {
+          setState((prevState) => ({
+            messages: [...prevState.messages, newMessage],
+            error: null,
+          }));
+        }
+      });
+    }
 
     return () => {
-      socket.disconnect();
+      if (socket) {
+        socket.off('newMessage');
+      }
     };
-  }, [chat]);
+  }, [chat, socket]);
 
   const { messages, error } = state;
 
@@ -88,6 +89,7 @@ ChatDetails.propTypes = {
     sim: PropTypes.string,
     sentStamp: PropTypes.string,
   }),
+  socket: PropTypes.object,
 };
 
 export default ChatDetails;

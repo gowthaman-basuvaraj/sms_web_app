@@ -1,8 +1,7 @@
 import { useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
-import io from 'socket.io-client';
 
-const ChatList = ({ onSelectChat }) => {
+const ChatList = ({ onSelectChat, socket, chats }) => {
   const [state, setState] = useState({
     chats: [],
     loading: true,
@@ -27,25 +26,27 @@ const ChatList = ({ onSelectChat }) => {
 
     fetchChats();
 
-    const socket = io('http://localhost:3000');
-
-    socket.on('newMessage', (newMessage) => {
-      setState((prevState) => {
-        const updatedChats = prevState.chats.filter(chat => chat.sender !== newMessage.sender);
-        return {
-          chats: [newMessage, ...updatedChats],
-          loading: false,
-          error: null,
-        };
+    if (socket) {
+      socket.on('newMessage', (newMessage) => {
+        setState((prevState) => {
+          const updatedChats = prevState.chats.filter(chat => chat.sender !== newMessage.sender);
+          return {
+            chats: [newMessage, ...updatedChats],
+            loading: false,
+            error: null,
+          };
+        });
       });
-    });
+    }
 
     return () => {
-      socket.disconnect();
+      if (socket) {
+        socket.off('newMessage');
+      }
     };
-  }, []);
+  }, [socket]);
 
-  const { chats, loading, error } = state;
+  const { chats: stateChats, loading, error } = state;
 
   if (loading) {
     return <div className="p-4">Loading chats...</div>;
@@ -57,10 +58,10 @@ const ChatList = ({ onSelectChat }) => {
 
   return (
     <div className="w-1/3 border-r border-gray-300 overflow-y-scroll h-full">
-      {chats.length === 0 ? (
+      {stateChats.length === 0 ? (
         <div className="p-4">No chats available</div>
       ) : (
-        chats.map((chat) => (
+        stateChats.map((chat) => (
           <div
             key={chat.id}
             onClick={() => onSelectChat(chat)}
@@ -76,6 +77,8 @@ const ChatList = ({ onSelectChat }) => {
 
 ChatList.propTypes = {
   onSelectChat: PropTypes.func.isRequired,
+  socket: PropTypes.object,
+  chats: PropTypes.array.isRequired,
 };
 
 export default ChatList;
