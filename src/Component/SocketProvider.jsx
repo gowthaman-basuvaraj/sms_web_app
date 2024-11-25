@@ -1,5 +1,6 @@
 import { createContext, useContext, useEffect, useState } from 'react';
 import io from 'socket.io-client';
+import PropTypes from 'prop-types';
 
 const SocketContext = createContext();
 
@@ -25,6 +26,7 @@ export const SocketProvider = ({ children }) => {
         }
       } catch (error) {
         setState({ chats: [], loading: false, error: 'Failed to fetch chats' });
+        console.error('Failed to fetch chats:', error);
       }
     };
 
@@ -80,4 +82,8 @@ export const SocketProvider = ({ children }) => {
       {children}
     </SocketContext.Provider>
   );
+};
+
+SocketProvider.propTypes = {
+  children: PropTypes.node.isRequired,
 };
