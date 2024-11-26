@@ -1,10 +1,12 @@
-import { useEffect, useState } from 'react';
-import PropTypes from 'prop-types';
+import { useEffect, useState } from "react";
+import PropTypes from "prop-types";
+import { FaSearch } from "react-icons/fa";
 
 const ChatDetails = ({ chat, socket }) => {
   const [state, setState] = useState({
     messages: [],
     error: null,
+    searchQuery: "",
   });
 
   useEffect(() => {
@@ -16,27 +18,29 @@ const ChatDetails = ({ chat, socket }) => {
     const fetchMessages = async () => {
       setState({ messages: [], error: null });
       try {
-        const response = await fetch(`${import.meta.env.VITE_BACKEND_API}/messages?sender=${chat.sender}`);
+        const response = await fetch(
+          `${import.meta.env.VITE_BACKEND_API}/messages?sender=${chat.sender}`
+        );
         const data = await response.json();
 
-        if (data.status === 'success' && Array.isArray(data.messages)) {
+        if (data.status === "success" && Array.isArray(data.messages)) {
           setState({ messages: data.messages, error: null });
         } else {
-          throw new Error('Unexpected data format');
+          throw new Error("Unexpected data format");
         }
       } catch (error) {
-        setState({ 
-          messages: [], 
-          error: 'Failed to fetch messages'
-          });
-          console.error('Failed to fetch messages:', error);
+        setState({
+          messages: [],
+          error: "Failed to fetch messages",
+        });
+        console.error("Failed to fetch messages:", error);
       }
     };
 
     fetchMessages();
 
     if (socket) {
-      socket.on('newMessage', (newMessage) => {
+      socket.on("newMessage", (newMessage) => {
         if (newMessage.sender === chat.sender) {
           setState((prevState) => ({
             messages: [...prevState.messages, newMessage],
@@ -48,10 +52,27 @@ const ChatDetails = ({ chat, socket }) => {
 
     return () => {
       if (socket) {
-        socket.off('newMessage');
+        socket.off("newMessage");
       }
     };
   }, [chat, socket]);
+
+  const handleSearchChange = (event) => {
+    setState((prevState) => ({
+      ...prevState,
+      searchQuery: event.target.value,
+    }));
+  };
+
+  const filteredChats = state.messages.filter((msg) => {
+    const simMatch = msg.sim
+      ?.toLowerCase()
+      .includes(state.searchQuery?.toLowerCase());
+    const textMatch = msg.text
+      ?.toLowerCase()
+      .includes(state.searchQuery?.toLowerCase());
+    return simMatch || textMatch;
+  });
 
   const { messages, error } = state;
 
@@ -65,16 +86,62 @@ const ChatDetails = ({ chat, socket }) => {
 
   return (
     <div className="p-4 flex flex-col w-full h-[90vh]">
-      <h2 className="text-2xl font-bold mb-4 sticky">{chat.sender}</h2>
-      <div className="flex-grow overflow-y-auto pr-4">
-        {messages.length === 0 ? (
-          <div className="mt-2">No messages available</div>
+      <div className="flex justify-between items-center">
+        <h2 className="text-2xl font-bold sticky">{chat.sender}</h2>
+        <div className="relative flex items-center">
+          <input
+            type="text"
+            placeholder="Search messages..."
+            value={state.searchQuery}
+            onChange={handleSearchChange}
+            className="w-full py-2 pl-16 border border-gray-300 rounded"
+          />
+          <FaSearch className="absolute left-10 top-1/2 transform -translate-y-1/2 text-gray-500" />
+        </div>
+      </div>
+      <div className="flex-grow overflow-y-auto">
+        {state.searchQuery?.length > 0 ? (
+          filteredChats.length === 0 ? (
+            <div className="mt-2 text-gray-600">
+              No messages found matching the search query.
+            </div>
+          ) : (
+            filteredChats.map((message) => (
+              <div
+                key={message.id}
+                className="mt-2 p-3 bg-gray-100 rounded-lg shadow-md"
+              >
+                <p className="text-lg">{message.text}</p>
+                {message.sim && (
+                  <p className="text-sm text-gray-600">
+                    <strong>SIM:</strong> {message.sim}
+                  </p>
+                )}
+                {message.sentStamp && (
+                  <p className="text-sm text-gray-600">
+                    <strong>Sent:</strong> {message.sentStamp}
+                  </p>
+                )}
+              </div>
+            ))
+          )
         ) : (
-          messages.map((message) => (
-            <div key={message.id} className="mt-2 p-3 bg-gray-100 rounded-lg shadow-md">
+          state.messages.map((message) => (
+            <div
+              key={message.id}
+              className="mt-2 p-3 bg-gray-100 rounded-lg shadow-md"
+            >
               <p className="text-lg">{message.text}</p>
-              <p className="text-sm text-gray-600"><strong>SIM:</strong> {message.sim}</p>
-              <p className="text-sm text-gray-600"><strong>Sent:</strong> {message.sentStamp}</p>
+              {message.sim && (
+                <p className="text-sm text-gray-600">
+                  <strong>SIM:</strong> {message.sim}
+                </p>
+              )}
+              {message.sentStamp && (
+                <p className="text-sm text-gray-600">
+                  <strong>Sent:</strong> {message.sentStamp}
+                </p>
+              )}
             </div>
           ))
         )}

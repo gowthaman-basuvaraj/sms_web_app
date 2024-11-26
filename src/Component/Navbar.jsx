@@ -5,8 +5,25 @@ import { useContext } from "react";
 
 const Navbar = () => {
   const user = JSON.parse(localStorage.getItem("user"));
-  
+
   const { keycloak } = useContext(AuthContext);
+
+  const handleLogout = () => {
+    console.log("Attempting to log out...");
+    if (keycloak) {
+      console.log("Logging out...");
+      keycloak
+        .logout()
+        .then(() => {
+          console.log("Logout successful");
+        })
+        .catch((error) => {
+          console.error("Logout failed:", error);
+        });
+    } else {
+      console.error("Keycloak instance not found");
+    }
+  };
 
   return (
     <nav className="bg-black text-white p-3">
@@ -19,19 +36,20 @@ const Navbar = () => {
             <SelectTrigger>
               <div className="flex items-center space-x-2 pr-3">
                 <FaRegUserCircle className="h-6 w-6 text-white" />
-                <span className="text-white">{user.name}</span>
+                <span className="text-white">{user?.name}</span>
               </div>
             </SelectTrigger>
             <SelectContent className="mt-4 p-0">
-              <SelectItem value={user.role}>
-                <b>Role:</b> {user.role}
+              <SelectItem value={user?.role}>
+                <b>Role:</b> {user?.role}
               </SelectItem>
-              <SelectItem
-                value="logout"
-                className="cursor-pointer hover:bg-slate-100 rounded-lg"
-                onClick={() => keycloak.logout()}
-              >
-                Logout
+              <SelectItem className="cursor-pointer hover:bg-slate-100 rounded-lg">
+                <button
+                  className="w-full text-left py-2 px-3 text-black"
+                  onClick={handleLogout}
+                >
+                  Logout
+                </button>
               </SelectItem>
             </SelectContent>
           </Select>
