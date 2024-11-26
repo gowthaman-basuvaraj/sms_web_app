@@ -16,7 +16,7 @@ const ChatDetails = ({ chat, socket }) => {
     const fetchMessages = async () => {
       setState({ messages: [], error: null });
       try {
-        const response = await fetch(`http://localhost:3000/messages?sender=${chat.sender}`);
+        const response = await fetch(`${import.meta.env.VITE_BACKEND_API}/messages?sender=${chat.sender}`);
         const data = await response.json();
 
         if (data.status === 'success' && Array.isArray(data.messages)) {

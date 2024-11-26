@@ -1,5 +1,6 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useContext } from 'react';
 import PropTypes from 'prop-types';
+import AuthContext from "../store/Auth";
 
 const ChatList = ({ onSelectChat, socket }) => {
   const [state, setState] = useState({
@@ -8,11 +9,12 @@ const ChatList = ({ onSelectChat, socket }) => {
     error: null,
     searchQuery: '',
   });
+  const { keycloak } = useContext(AuthContext);
 
   useEffect(() => {
     const fetchChats = async () => {
       try {
-        const response = await fetch('http://localhost:3000/messages/recent');
+        const response = await fetch(`${import.meta.env.VITE_BACKEND_API}/messages/recent`);
         const data = await response.json();
 
         if (data.status === 'success' && Array.isArray(data.messages)) {
@@ -103,6 +105,7 @@ const ChatList = ({ onSelectChat, socket }) => {
           </div>
         ))
       )}
+      <button onClick={() => keycloak.logout()}>Logout</button>
     </div>
   );
 };

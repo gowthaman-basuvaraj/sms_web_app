@@ -3,13 +3,14 @@ import ChatList from "./Component/ChatList";
 import ChatDetails from "./Component/ChatDetails";
 import io from "socket.io-client";
 import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
-import Login from "./Component/Login";
+import { jwtDecode } from "jwt-decode";
 
 const App = () => {
   const [state, setState] = useState({
     selectedChat: null,
     chats: [],
     socket: null,
+    haveAccess: false,
   });
 
   useEffect(() => {
@@ -18,7 +19,7 @@ const App = () => {
       Notification.requestPermission();
     }
 
-    const socketInstance = io("http://localhost:3000");
+    const socketInstance = io(`${import.meta.env.VITE_BACKEND_API}`);
     setState((prevState) => ({ ...prevState, socket: socketInstance }));
 
     socketInstance.on("newMessage", (newMessage) => {
@@ -55,24 +56,62 @@ const App = () => {
     setState((prevState) => ({ ...prevState, selectedChat: chat }));
   };
 
+  const handleAccess = () => {
+    const token = localStorage.getItem("token");
+    const decodedToken = jwtDecode(token || "");
+    console.log("decoded token:", decodedToken);
+    console.log(
+      "Decoded token access:",
+      decodedToken.realm_access.roles.includes(
+        import.meta.env.VITE_REALM_ACCESS
+      )
+        ? true
+        : false
+    );
+    setState((prev) => ({
+      ...prev,
+      haveAccess: decodedToken.realm_access.roles.includes(
+        import.meta.env.VITE_REALM_ACCESS
+      )
+        ? true
+        : false,
+    }));
+  };
+  useEffect(() => {
+    handleAccess();
+  }, []);
+
   return (
     <Router>
       <div className="flex h-screen">
         <Routes>
-          <Route path="/login" element={<Login />} />
-          <Route
-            path="/"
-            element={
-              <>
-                <ChatList
-                  chats={state.chats}
-                  onSelectChat={handleSelectChat}
-                  socket={state.socket}
-                />
-                <ChatDetails chat={state.selectedChat} socket={state.socket} />
-              </>
-            }
-          />
+          {state.haveAccess ? (
+            <Route
+              path="/"
+              element={
+                <>
+                  <ChatList
+                    chats={state.chats}
+                    onSelectChat={handleSelectChat}
+                    socket={state.socket}
+                  />
+                  <ChatDetails
+                    chat={state.selectedChat}
+                    socket={state.socket}
+                  />
+                </>
+              }
+            />
+          ) : (
+            <Route
+              path="*"
+              element={
+                <div className="flex justify-center items-center h-screen">
+                  <h1>You do not have access to read the SMS</h1>
+                </div>
+              }
+            />
+          )}
         </Routes>
       </div>
     </Router>

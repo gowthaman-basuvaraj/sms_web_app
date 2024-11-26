@@ -16,7 +16,7 @@ export const SocketProvider = ({ children }) => {
   useEffect(() => {
     const fetchChats = async () => {
       try {
-        const response = await fetch("http://localhost:3000/messages/recent");
+        const response = await fetch(`${import.meta.env.VITE_BACKEND_API}/messages/recent`);
         const data = await response.json();
 
         if (data.status === "success" && Array.isArray(data.messages)) {
@@ -32,7 +32,7 @@ export const SocketProvider = ({ children }) => {
 
     fetchChats();
 
-    const socket = io("http://localhost:3000");
+    const socket = io(`${import.meta.env.VITE_BACKEND_API}`);
 
     socket.on("newMessage", (newMessage) => {
       setState((prevState) => {
