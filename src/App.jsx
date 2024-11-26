@@ -20,12 +20,16 @@ const App = () => {
   useEffect(() => {
     // Request notification permission
     if (Notification.permission !== "granted") {
-      Notification.requestPermission();
+      Notification.requestPermission().then((permission) => {
+        console.log("Notification permission:", permission);
+      });
+    } else {
+      console.log("Notification permission already granted");
     }
-
+  
     const socketInstance = io(`${import.meta.env.VITE_BACKEND_API}`);
     setState((prevState) => ({ ...prevState, socket: socketInstance }));
-
+  
     socketInstance.on("newMessage", (newMessage) => {
       setState((prevState) => {
         const updatedChats = prevState.chats.filter(
@@ -34,23 +38,32 @@ const App = () => {
         return { ...prevState, chats: [newMessage, ...updatedChats] };
       });
 
+      
+  
       // Show desktop notification
       if (Notification.permission === "granted") {
+
+        console.log("Showing notification for new message:", newMessage);
         const notification = new Notification("New message received", {
           body: `${newMessage.sender}: ${newMessage.text}`,
         });
-
+  
+         // Play notification sound
+         const audio = new Audio("/sound.mp3");
+         audio.play();
+        
         notification.onclick = () => {
           setState((prevState) => ({ ...prevState, selectedChat: newMessage }));
           window.focus();
         };
+      } else {
+        console.log("Notification permission not granted");
       }
-
-      // Play notification sound
-      const audio = new Audio("/sound.mp3");
-      audio.play();
+  
+      
+      
     });
-
+  
     return () => {
       socketInstance.disconnect();
     };
