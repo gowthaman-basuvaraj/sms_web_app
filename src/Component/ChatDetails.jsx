@@ -64,8 +64,8 @@ const ChatDetails = ({ chat, socket }) => {
   }
 
   return (
-    <div className="p-4 flex flex-col h-full w-full">
-      <h2 className="text-2xl font-bold mb-4">{chat.sender}</h2>
+    <div className="p-4 flex flex-col w-full h-[90vh]">
+      <h2 className="text-2xl font-bold mb-4 sticky">{chat.sender}</h2>
       <div className="flex-grow overflow-y-auto pr-4">
         {messages.length === 0 ? (
           <div className="mt-2">No messages available</div>

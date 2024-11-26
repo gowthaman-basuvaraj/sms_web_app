@@ -4,6 +4,7 @@ import ChatDetails from "./Component/ChatDetails";
 import io from "socket.io-client";
 import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
 import { jwtDecode } from "jwt-decode";
+import Navbar from "./Component/Navbar";
 
 const App = () => {
   const [state, setState] = useState({
@@ -66,7 +67,7 @@ const App = () => {
       console.error("Token not found in localStorage");
       return;
     }
-  
+
     const decodedToken = jwtDecode(token || "");
     const user = {
       name: decodedToken.preferred_username,
@@ -76,9 +77,10 @@ const App = () => {
         ? import.meta.env.VITE_REALM_ACCESS
         : "",
     };
-  
+    localStorage.setItem("user", JSON.stringify(user));
+
     console.log("Decoded token:", decodedToken);
-  
+
     setState((prev) => ({
       ...prev,
       haveAccess: decodedToken.realm_access.roles.includes(
@@ -88,7 +90,7 @@ const App = () => {
         : false,
       user,
     }));
-  
+
     try {
       const res = await fetch(`${import.meta.env.VITE_BACKEND_API}/user`, {
         method: "POST",
@@ -98,7 +100,7 @@ const App = () => {
         },
         body: JSON.stringify(user),
       });
-  
+
       console.log("User data:", user);
       if (!res.ok) {
         throw new Error("Failed to add user data");
@@ -108,43 +110,46 @@ const App = () => {
       console.error("Failed to check access:", error);
     }
   };
-  
+
   useEffect(() => {
     handleAccess();
   }, []);
 
   return (
     <Router>
-      <div className="flex h-screen">
-        <Routes>
-          {state.haveAccess ? (
-            <Route
-              path="/"
-              element={
-                <>
-                  <ChatList
-                    chats={state.chats}
-                    onSelectChat={handleSelectChat}
-                    socket={state.socket}
-                  />
-                  <ChatDetails
-                    chat={state.selectedChat}
-                    socket={state.socket}
-                  />
-                </>
-              }
-            />
-          ) : (
-            <Route
-              path="*"
-              element={
-                <div className="flex justify-center items-center h-screen">
-                  <h1>You do not have access to read the SMS</h1>
-                </div>
-              }
-            />
-          )}
-        </Routes>
+      <div className="flex flex-col">
+        <Navbar />
+        <div className="flex">
+          <Routes>
+            {state.haveAccess ? (
+              <Route
+                path="/"
+                element={
+                  <>
+                    <ChatList
+                      chats={state.chats}
+                      onSelectChat={handleSelectChat}
+                      socket={state.socket}
+                    />
+                    <ChatDetails
+                      chat={state.selectedChat}
+                      socket={state.socket}
+                    />
+                  </>
+                }
+              />
+            ) : (
+              <Route
+                path="*"
+                element={
+                  <div className="flex justify-center items-center h-screen">
+                    <h1>You do not have access to read the SMS</h1>
+                  </div>
+                }
+              />
+            )}
+          </Routes>
+        </div>
       </div>
     </Router>
   );

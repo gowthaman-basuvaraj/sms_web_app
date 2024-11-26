@@ -1,7 +1,7 @@
-import { useEffect, useState, useContext } from "react";
+import { useEffect, useState } from "react";
 import PropTypes from "prop-types";
-import AuthContext from "../store/Auth";
 import { FaSearch } from "react-icons/fa";
+import Loader from "./Loader";
 
 const ChatList = ({ onSelectChat, socket }) => {
   const [state, setState] = useState({
@@ -10,7 +10,6 @@ const ChatList = ({ onSelectChat, socket }) => {
     error: null,
     searchQuery: "",
   });
-  const { keycloak } = useContext(AuthContext);
 
   useEffect(() => {
     const fetchChats = async () => {
@@ -80,7 +79,7 @@ const ChatList = ({ onSelectChat, socket }) => {
   );
 
   if (state.loading) {
-    return <div className="p-4">Loading chats...</div>;
+    return <div className="p-4"><Loader /></div>;
   }
 
   if (state.error) {
@@ -88,7 +87,7 @@ const ChatList = ({ onSelectChat, socket }) => {
   }
 
   return (
-    <div className="w-1/3 border-r border-gray-300 overflow-y-scroll h-full flex flex-col justify-between p-3">
+    <div className="w-1/3 border-r h-[90vh] border-gray-300 overflow-y-auto flex flex-col justify-between p-1">
       <div className="">
         <div className="relative p-4 flex items-center">
           <input
@@ -114,12 +113,6 @@ const ChatList = ({ onSelectChat, socket }) => {
           ))
         )}
       </div>
-      <button
-        className="border-2 p-2 rounded-md bg-black text-white font-semibold place-content-end"
-        onClick={() => keycloak.logout()}
-      >
-        Logout
-      </button>
     </div>
   );
 };
