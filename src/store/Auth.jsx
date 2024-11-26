@@ -4,10 +4,10 @@ import PropTypes from "prop-types";
 
 const AuthContext = createContext();
 
-const url =
-  "https://auth.readymixerp.com/realms/rmc-dev/protocol/openid-connect/auth";
-const realm = "rmc-dev";
-const clientId = "rmc";
+const url = import.meta.env.VITE_KEYCLOAK_URL;
+const realm = import.meta.env.VITE_KEYCLOAK_REALM;
+const clientId = import.meta.env.VITE_KEYCLOAK_CLIENT_ID;
+
 const keycloak = new Keycloak({ url, realm, clientId });
 
 export const Auth = ({ children }) => {
