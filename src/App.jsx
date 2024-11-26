@@ -11,6 +11,10 @@ const App = () => {
     chats: [],
     socket: null,
     haveAccess: false,
+    user: {
+      name: "",
+      role: "",
+    },
   });
 
   useEffect(() => {
@@ -56,18 +60,25 @@ const App = () => {
     setState((prevState) => ({ ...prevState, selectedChat: chat }));
   };
 
-  const handleAccess = () => {
+  const handleAccess = async () => {
     const token = localStorage.getItem("token");
+    if (!token) {
+      console.error("Token not found in localStorage");
+      return;
+    }
+  
     const decodedToken = jwtDecode(token || "");
-    console.log("decoded token:", decodedToken);
-    console.log(
-      "Decoded token access:",
-      decodedToken.realm_access.roles.includes(
+    const user = {
+      name: decodedToken.preferred_username,
+      role: decodedToken.realm_access.roles.includes(
         import.meta.env.VITE_REALM_ACCESS
       )
-        ? true
-        : false
-    );
+        ? import.meta.env.VITE_REALM_ACCESS
+        : "",
+    };
+  
+    console.log("Decoded token:", decodedToken);
+  
     setState((prev) => ({
       ...prev,
       haveAccess: decodedToken.realm_access.roles.includes(
@@ -75,8 +86,29 @@ const App = () => {
       )
         ? true
         : false,
+      user,
     }));
+  
+    try {
+      const res = await fetch(`${import.meta.env.VITE_BACKEND_API}/user`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(user),
+      });
+  
+      console.log("User data:", user);
+      if (!res.ok) {
+        throw new Error("Failed to add user data");
+      }
+      console.log("User data added successfully to the database");
+    } catch (error) {
+      console.error("Failed to check access:", error);
+    }
   };
+  
   useEffect(() => {
     handleAccess();
   }, []);

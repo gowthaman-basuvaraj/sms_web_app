@@ -10,14 +10,6 @@ const clientId = import.meta.env.VITE_KEYCLOAK_CLIENTID;
 
 const keycloak = new Keycloak({ url, realm, clientId });
 
-export const authFormData = (token) => {
-  let form = new FormData();
-  form.append("token", token);
-  form.append("url", url);
-  form.append("realm", realm);
-  return form;
-};
-
 export const Auth = ({ children }) => {
   const [authToken, setAuthToken] = useState(null);
 
@@ -31,10 +23,7 @@ export const Auth = ({ children }) => {
 
         if (authenticated) {
           setAuthToken(keycloak.token);
-          console.log(
-            "Authenticated successfully",
-            authFormData(keycloak.token)
-          );
+          console.log("Authenticated successfully");
           localStorage.setItem("token", keycloak.token);
         }
       } catch (error) {
@@ -46,9 +35,7 @@ export const Auth = ({ children }) => {
   }, []);
 
   return (
-    <AuthContext.Provider
-      value={{ authToken, setAuthToken, keycloak, authFormData }}
-    >
+    <AuthContext.Provider value={{ authToken, setAuthToken, keycloak }}>
       {children}
     </AuthContext.Provider>
   );
