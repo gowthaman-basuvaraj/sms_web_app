@@ -12,6 +12,7 @@
   "dependencies": {
     "@coreui/coreui": "^5.2.0",
     "@coreui/react": "^5.4.1",
+    "@material-tailwind/react": "^2.1.10",
     "@radix-ui/react-select": "^2.1.1",
     "@radix-ui/themes": "^3.1.6",
     "axios": "^1.7.7",

@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import PropTypes from "prop-types";
 import { FaSearch } from "react-icons/fa";
 import { useSocket } from "./SocketProvider";
+import { IoCloseSharp } from "react-icons/io5";
 
 const ChatDetails = ({ chat, onCloseChat }) => {
   const { socket } = useSocket();
@@ -77,12 +78,12 @@ const ChatDetails = ({ chat, onCloseChat }) => {
   });
 
   const handleChatClose = () => {
-    setState((prev)=>({
+    setState((prev) => ({
       ...prev,
       messages: [],
-    }))
+    }));
     onCloseChat();
-  }
+  };
 
   const { messages, error } = state;
 
@@ -109,10 +110,11 @@ const ChatDetails = ({ chat, onCloseChat }) => {
             />
             <FaSearch className="absolute left-10 top-1/2 transform -translate-y-1/2 text-gray-500" />
           </div>
-          <div className="cursor-pointer p-2 hover:text-red-600" onClick={handleChatClose}>
-            <button className="text-xl">
-              X
-            </button>
+          <div
+            className="cursor-pointer p-2 hover:text-red-600"
+            onClick={handleChatClose}
+          >
+            <IoCloseSharp className="font-bold text-3xl" />
           </div>
         </div>
       </div>
