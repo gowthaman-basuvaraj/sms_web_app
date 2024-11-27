@@ -39,12 +39,12 @@ const Navbar = () => {
                 <span className="text-white">{user?.name}</span>
               </div>
             </SelectTrigger>
-            <SelectContent className="mt-4">
-              <div className="px-3">
+            <SelectContent className="mt-4 bg-white">
+              <div className="px-3 cursor-default">
                 <b>Role:</b> {user?.role}
               </div>
               <button
-                className="w-full text-left py-2 px-3 text-black"
+                className="w-full text-left py-2 px-3 text-black hover:bg-slate-100 rounded-md"
                 onClick={handleLogout}
               >
                 Logout

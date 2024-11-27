@@ -5,6 +5,7 @@ import io from "socket.io-client";
 import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
 import { jwtDecode } from "jwt-decode";
 import Navbar from "./Component/Navbar";
+import { refreshToken } from "./store/Auth";
 
 const App = () => {
   const [state, setState] = useState({
@@ -27,10 +28,10 @@ const App = () => {
     } else {
       console.log("Notification permission already granted");
     }
-  
+
     const socketInstance = io(`${import.meta.env.VITE_BACKEND_API}`);
     setState((prevState) => ({ ...prevState, socket: socketInstance }));
-  
+
     socketInstance.on("newMessage", (newMessage) => {
       setState((prevState) => {
         const updatedChats = prevState.chats.filter(
@@ -39,20 +40,17 @@ const App = () => {
         return { ...prevState, chats: [newMessage, ...updatedChats] };
       });
 
-      
-  
       // Show desktop notification
       if (Notification.permission === "granted") {
-
         console.log("Showing notification for new message:", newMessage);
         const notification = new Notification("New message received", {
           body: `${newMessage.sender}: ${newMessage.text}`,
         });
-  
-         // Play notification sound
-         const audio = new Audio("/sound.mp3");
-         audio.play();
-        
+
+        // Play notification sound
+        const audio = new Audio("/sound.mp3");
+        audio.play();
+
         notification.onclick = () => {
           setState((prevState) => ({ ...prevState, selectedChat: newMessage }));
           window.focus();
@@ -60,11 +58,8 @@ const App = () => {
       } else {
         console.log("Notification permission not granted");
       }
-  
-      
-      
     });
-  
+
     return () => {
       socketInstance.disconnect();
     };
@@ -74,14 +69,32 @@ const App = () => {
     setState((prevState) => ({ ...prevState, selectedChat: chat }));
   };
 
+  const isTokenExpired = (token) => {
+    const decoded = jwtDecode(token);
+    const currentTime = Math.floor(Date.now() / 1000);
+    return decoded.exp < currentTime;
+  };
+
   const handleAccess = async () => {
-    const token = localStorage.getItem("token");
-    if (!token) {
-      console.error("Token not found in localStorage");
-      return;
+    let token = localStorage.getItem("token");
+    const refreshTokenValue = localStorage.getItem("refreshToken");
+
+    if (!token || isTokenExpired(token)) {
+      console.log("Access token expired, refreshing...");
+      const tokens = await refreshToken(refreshTokenValue);
+
+      if (!tokens) {
+        console.error("Failed to refresh token, user cannot access");
+        setState((prev) => ({ ...prev, haveAccess: false }));
+        return;
+      }
+
+      token = tokens.accessToken;
+      localStorage.setItem("token", token);
+      localStorage.setItem("refreshToken", tokens.refreshToken);
     }
 
-    const decodedToken = jwtDecode(token || "");
+    const decodedToken = jwtDecode(token);
     const user = {
       name: decodedToken.preferred_username,
       role: decodedToken.realm_access.roles.includes(
@@ -90,17 +103,14 @@ const App = () => {
         ? import.meta.env.VITE_REALM_ACCESS
         : "",
     };
-    localStorage.setItem("user", JSON.stringify(user));
 
-    console.log("Decoded token:", decodedToken);
+    localStorage.setItem("user", JSON.stringify(user));
 
     setState((prev) => ({
       ...prev,
       haveAccess: decodedToken.realm_access.roles.includes(
         import.meta.env.VITE_REALM_ACCESS
-      )
-        ? true
-        : false,
+      ),
       user,
     }));
 
