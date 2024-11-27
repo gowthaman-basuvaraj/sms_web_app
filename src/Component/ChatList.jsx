@@ -23,7 +23,7 @@ const ChatList = ({ onSelectChat }) => {
   );
 
   if (loading) {
-    return <div className="p-4"><Loader /></div>;
+    return <div className="mt-2 flex justify-center w-full h-full"><Loader /></div>;
   }
 
   if (error) {
