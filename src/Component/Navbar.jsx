@@ -26,7 +26,7 @@ const Navbar = () => {
   };
 
   return (
-    <nav className="bg-black text-white p-3">
+    <nav className="bg-green-600 text-white p-3">
       <div className="flex justify-between items-center">
         <div className="flex items-center space-x-4">
           <span className="text-xl font-bold">SMS-Web-App</span>

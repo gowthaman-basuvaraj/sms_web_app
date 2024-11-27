@@ -23,7 +23,7 @@ const ChatList = ({ onSelectChat }) => {
   );
 
   if (loading) {
-    return <div className="mt-2 flex justify-center w-full h-full"><Loader /></div>;
+    return <div className="p-4"><Loader /></div>;
   }
 
   if (error) {
@@ -31,18 +31,18 @@ const ChatList = ({ onSelectChat }) => {
   }
 
   return (
-    <div className="w-1/3 border-r h-[90vh] border-gray-300 overflow-y-auto flex flex-col justify-between p-1">
-      <div className="">
-        <div className="relative p-4 flex items-center">
-          <input
-            type="text"
-            placeholder="Search chats..."
-            value={searchQuery}
-            onChange={handleSearchChange}
-            className="w-full py-2 pl-10 border border-gray-300 rounded"
-          />
-          <FaSearch className="absolute left-10 top-1/2 transform -translate-y-1/2 text-gray-500" />
-        </div>
+    <div className="w-1/3 border-r h-[90vh] border-gray-300 overflow-y-auto flex flex-col bg-white">
+      <div className="relative p-4 flex items-center bg-gray-100">
+        <input
+          type="text"
+          placeholder="Search chats..."
+          value={searchQuery}
+          onChange={handleSearchChange}
+          className="w-full py-2 pl-10 border border-gray-300 rounded"
+        />
+        <FaSearch className="absolute left-10 top-1/2 transform -translate-y-1/2 text-gray-500" />
+      </div>
+      <div className="flex-grow overflow-y-auto">
         {filteredChats.length === 0 ? (
           <div className="p-4">No chats available</div>
         ) : (
@@ -50,7 +50,7 @@ const ChatList = ({ onSelectChat }) => {
             <div
               key={chat.id}
               onClick={() => handleSelectChat(chat)}
-              className={`p-4 flex items-center cursor-pointer ${chat.id == localStorage.getItem("selectedChat") ? "bg-gray-200 rounded-md" : ""} hover:bg-gray-100`}
+              className={`p-4 flex items-center cursor-pointer ${chat.id == localStorage.getItem("selectedChat") ? "bg-green-200 rounded-md" : ""} hover:bg-green-100`}
             >
               <strong>{chat.sender}</strong>: {chat.text}
             </div>

@@ -4,6 +4,7 @@ import { FaSearch } from "react-icons/fa";
 import { useSocket } from "./SocketProvider";
 import { IoCloseSharp } from "react-icons/io5";
 
+
 const ChatDetails = ({ chat, onCloseChat }) => {
   const { socket } = useSocket();
   const [state, setState] = useState({
@@ -78,14 +79,14 @@ const ChatDetails = ({ chat, onCloseChat }) => {
   });
 
   const handleChatClose = () => {
-    setState((prev) => ({
+    setState((prev)=>({
       ...prev,
       messages: [],
-    }));
+    }))
     onCloseChat();
-  };
+  }
 
-  const { messages, error } = state;
+  const { error } = state;
 
   if (!chat) {
     return <div className="p-4">Select a chat to view details</div>;
@@ -128,7 +129,7 @@ const ChatDetails = ({ chat, onCloseChat }) => {
             filteredChats.map((message) => (
               <div
                 key={message.id}
-                className="mt-2 p-3 bg-gray-100 rounded-lg shadow-md"
+                className="mt-2 p-3 bg-white rounded-lg shadow-md"
               >
                 <p className="text-lg">{message.text}</p>
                 {message.sim && (
@@ -148,7 +149,7 @@ const ChatDetails = ({ chat, onCloseChat }) => {
           state.messages.map((message) => (
             <div
               key={message.id}
-              className="mt-2 p-3 bg-gray-100 rounded-lg shadow-md"
+              className="mt-2 p-3 bg-white rounded-lg shadow-md"
             >
               <p className="text-lg">{message.text}</p>
               {message.sim && (

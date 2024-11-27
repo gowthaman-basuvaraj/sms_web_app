@@ -33,9 +33,9 @@ const App = () => {
   return (
     <SocketProvider handleSelectChat={handleSelectChat}>
       <Router>
-        <div className="flex flex-col">
+        <div className="flex flex-col h-screen">
           <Navbar />
-          <div className="flex">
+          <div className="flex flex-grow">
             <Routes>
               {state.haveAccess ? (
                 <Route
