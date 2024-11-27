@@ -1,8 +1,10 @@
 import { useEffect, useState } from "react";
 import PropTypes from "prop-types";
 import { FaSearch } from "react-icons/fa";
+import { useSocket } from "./SocketProvider";
 
-const ChatDetails = ({ chat, socket }) => {
+const ChatDetails = ({ chat }) => {
+  const { socket } = useSocket();
   const [state, setState] = useState({
     messages: [],
     error: null,
@@ -157,7 +159,6 @@ ChatDetails.propTypes = {
     sim: PropTypes.string,
     sentStamp: PropTypes.string,
   }),
-  socket: PropTypes.object,
 };
 
 export default ChatDetails;
