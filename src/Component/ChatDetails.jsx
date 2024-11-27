@@ -3,7 +3,7 @@ import PropTypes from "prop-types";
 import { FaSearch } from "react-icons/fa";
 import { useSocket } from "./SocketProvider";
 
-const ChatDetails = ({ chat }) => {
+const ChatDetails = ({ chat, onCloseChat }) => {
   const { socket } = useSocket();
   const [state, setState] = useState({
     messages: [],
@@ -76,6 +76,14 @@ const ChatDetails = ({ chat }) => {
     return simMatch || textMatch;
   });
 
+  const handleChatClose = () => {
+    setState((prev)=>({
+      ...prev,
+      messages: [],
+    }))
+    onCloseChat();
+  }
+
   const { messages, error } = state;
 
   if (!chat) {
@@ -90,15 +98,22 @@ const ChatDetails = ({ chat }) => {
     <div className="p-4 flex flex-col w-full h-[90vh]">
       <div className="flex justify-between items-center">
         <h2 className="text-2xl font-bold sticky">{chat.sender}</h2>
-        <div className="relative flex items-center">
-          <input
-            type="text"
-            placeholder="Search messages..."
-            value={state.searchQuery}
-            onChange={handleSearchChange}
-            className="w-full py-2 pl-16 border border-gray-300 rounded"
-          />
-          <FaSearch className="absolute left-10 top-1/2 transform -translate-y-1/2 text-gray-500" />
+        <div className="flex gap-4 items-center">
+          <div className="relative flex items-center">
+            <input
+              type="text"
+              placeholder="Search messages..."
+              value={state.searchQuery}
+              onChange={handleSearchChange}
+              className="w-full py-2 pl-16 border border-gray-300 rounded"
+            />
+            <FaSearch className="absolute left-10 top-1/2 transform -translate-y-1/2 text-gray-500" />
+          </div>
+          <div className="cursor-pointer p-2 hover:text-red-600" onClick={handleChatClose}>
+            <button className="text-xl">
+              X
+            </button>
+          </div>
         </div>
       </div>
       <div className="flex-grow overflow-y-auto">
@@ -159,6 +174,7 @@ ChatDetails.propTypes = {
     sim: PropTypes.string,
     sentStamp: PropTypes.string,
   }),
+  onCloseChat: PropTypes.func.isRequired,
 };
 
 export default ChatDetails;

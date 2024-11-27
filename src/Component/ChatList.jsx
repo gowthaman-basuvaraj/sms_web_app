@@ -12,6 +12,10 @@ const ChatList = ({ onSelectChat }) => {
     setSearchQuery(event.target.value);
   };
 
+  const handleSelectChat = (chat) => {
+    onSelectChat(chat);
+  };
+
   const filteredChats = chats.filter(
     (chat) =>
       chat.sender.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -45,8 +49,8 @@ const ChatList = ({ onSelectChat }) => {
           filteredChats.map((chat) => (
             <div
               key={chat.id}
-              onClick={() => onSelectChat(chat)}
-              className="p-4 cursor-pointer hover:bg-gray-100"
+              onClick={() => handleSelectChat(chat)}
+              className={`p-4 flex items-center cursor-pointer ${chat.id == localStorage.getItem("selectedChat") ? "bg-gray-200 rounded-md" : ""} hover:bg-gray-100`}
             >
               <strong>{chat.sender}</strong>: {chat.text}
             </div>
