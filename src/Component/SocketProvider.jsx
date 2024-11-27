@@ -6,7 +6,7 @@ const SocketContext = createContext();
 
 export const useSocket = () => useContext(SocketContext);
 
-export const SocketProvider = ({ children }) => {
+export const SocketProvider = ({ children, handleSelectChat }) => {
   const [state, setState] = useState({
     chats: [],
     loading: true,
@@ -57,6 +57,7 @@ export const SocketProvider = ({ children }) => {
         });
 
         notification.onclick = () => {
+          handleSelectChat(newMessage);
           window.focus();
         };
       } else if (Notification.permission !== "denied") {
@@ -67,6 +68,7 @@ export const SocketProvider = ({ children }) => {
             });
 
             notification.onclick = () => {
+              handleSelectChat(newMessage);
               window.focus();
             };
           }
@@ -77,7 +79,7 @@ export const SocketProvider = ({ children }) => {
     return () => {
       socket.disconnect();
     };
-  }, []);
+  }, [handleSelectChat]);
 
   return (
     <SocketContext.Provider value={state}>{children}</SocketContext.Provider>
@@ -86,4 +88,5 @@ export const SocketProvider = ({ children }) => {
 
 SocketProvider.propTypes = {
   children: PropTypes.node.isRequired,
+  handleSelectChat: PropTypes.func.isRequired,
 };
