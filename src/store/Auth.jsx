@@ -10,7 +10,7 @@ const clientId = import.meta.env.VITE_KEYCLOAK_CLIENTID;
 
 const keycloak = new Keycloak({ url, realm, clientId });
 
-export const refreshToken = async () => {
+export const RefreshToken = async () => {
   const refresh_token = localStorage.getItem("refresh_token");
 
   if (!refresh_token) {

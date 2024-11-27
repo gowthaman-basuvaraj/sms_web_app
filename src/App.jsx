@@ -5,7 +5,7 @@ import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
 import { jwtDecode } from "jwt-decode";
 import Navbar from "./Component/Navbar";
 import { SocketProvider } from "./Component/SocketProvider";
-import { refreshToken } from "./store/Auth";
+import { RefreshToken } from "./store/Auth";
 
 const App = () => {
   const [state, setState] = useState({
@@ -33,7 +33,7 @@ const App = () => {
 
     if (!token || isTokenExpired(token)) {
       console.log("Access token expired, refreshing...");
-      const tokens = await refreshToken(refreshTokenValue);
+      const tokens = await RefreshToken(refreshTokenValue);
 
       if (!tokens) {
         console.error("Failed to refresh token, user cannot access");
