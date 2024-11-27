@@ -1,5 +1,5 @@
 import { FaRegUserCircle } from "react-icons/fa";
-import { Select, SelectContent, SelectItem, SelectTrigger } from "../UI/select";
+import { Select, SelectContent, SelectTrigger } from "../UI/select";
 import AuthContext from "../store/Auth";
 import { useContext } from "react";
 
@@ -39,18 +39,16 @@ const Navbar = () => {
                 <span className="text-white">{user?.name}</span>
               </div>
             </SelectTrigger>
-            <SelectContent className="mt-4 p-0">
-              <SelectItem value={user?.role}>
+            <SelectContent className="mt-4">
+              <div className="px-3">
                 <b>Role:</b> {user?.role}
-              </SelectItem>
-              <SelectItem className="cursor-pointer hover:bg-slate-100 rounded-lg">
-                <button
-                  className="w-full text-left py-2 px-3 text-black"
-                  onClick={handleLogout}
-                >
-                  Logout
-                </button>
-              </SelectItem>
+              </div>
+              <button
+                className="w-full text-left py-2 px-3 text-black"
+                onClick={handleLogout}
+              >
+                Logout
+              </button>
             </SelectContent>
           </Select>
         </div>
