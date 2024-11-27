@@ -91,7 +91,7 @@ const App = () => {
   }, []);
 
   return (
-    <SocketProvider>
+    <SocketProvider handleSelectChat={handleSelectChat}>
       <Router>
         <div className="flex flex-col">
           <Navbar />
