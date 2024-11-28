@@ -31,7 +31,7 @@ const ChatList = ({ onSelectChat }) => {
   }
 
   return (
-    <div className="w-1/3 border-r h-[90vh] border-gray-300 overflow-y-auto flex flex-col bg-white">
+    <div className="w-full md:w-1/3 border-r h-[90vh] border-gray-300 overflow-y-auto flex flex-col bg-white">
       <div className="relative p-4 flex items-center bg-gray-100">
         <input
           type="text"
@@ -52,7 +52,8 @@ const ChatList = ({ onSelectChat }) => {
               onClick={() => handleSelectChat(chat)}
               className={`p-4 flex items-center cursor-pointer ${chat.id == localStorage.getItem("selectedChat") ? "bg-green-200 rounded-md" : ""} hover:bg-green-100`}
             >
-              <strong>{chat.sender}</strong>: {chat.text}
+              <strong className="truncate w-1/3">{chat.sender}</strong>
+              <span className="truncate w-2/3 ml-2">{chat.text}</span>
             </div>
           ))
         )}
