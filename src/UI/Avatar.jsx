@@ -22,25 +22,31 @@ Avatar.propTypes = {
 export default Avatar;
 
 export const HandleAvatar = (sender) => {
-  const candidates = Object.keys(avatar);
-  const target = sender?.toLowerCase() || "";
+    const candidates = Object.keys(avatar);
+    const target = sender?.toLowerCase().trim() || "";
 
-  let bestMatch = { key: null, score: Infinity };
+    if(target === "pay") return avatar.default;
+  
+    let bestMatch = { key: null, distance: Infinity };
+  
+    candidates.forEach((key) => {
+      const keyLower = key.toLowerCase();
+  
+      const isSubstring = target.includes(keyLower);
 
-  candidates.forEach((key) => {
-    const keyLower = key.toLowerCase();
+      const distance = levenshtein.get(target, keyLower);
 
-    if (target.includes(keyLower) || keyLower.includes(target)) {
-      bestMatch = { key, score: 0 };
-      return;
-    }
-    const score = levenshtein.get(target, keyLower);
-    if (score < bestMatch.score) {
-      bestMatch = { key, score };
-    }
-  });
+      const isPriorityKey = ["hdfc", "icici", "sbi", "amazon", "canbnk"].includes(keyLower);
+  
+      if (isSubstring && isPriorityKey) {
+        bestMatch = { key, distance: 0 };
+      } else if (distance < bestMatch.distance) {
+        bestMatch = { key, distance: distance };
+      }
+    });
 
-  return bestMatch.key && bestMatch.score < 4
-    ? avatar[bestMatch.key]
-    : avatar.default;
-};
+    return bestMatch.distance === 0 || bestMatch.distance < 3
+      ? avatar[bestMatch.key]
+      : avatar.default;
+  };
+  
