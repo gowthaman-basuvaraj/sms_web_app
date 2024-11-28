@@ -16,7 +16,9 @@ export const SocketProvider = ({ children, handleSelectChat }) => {
   useEffect(() => {
     const fetchChats = async () => {
       try {
-        const response = await fetch(`${import.meta.env.VITE_BACKEND_API}/messages/recent`);
+        const response = await fetch(
+          `${import.meta.env.VITE_BACKEND_API}/messages/recent`
+        );
         const data = await response.json();
 
         if (data.status === "success" && Array.isArray(data.messages)) {

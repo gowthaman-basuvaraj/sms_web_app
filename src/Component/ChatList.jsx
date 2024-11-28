@@ -62,7 +62,7 @@ const ChatList = ({ onSelectChat }) => {
   }
 
   return (
-    <div className="w-1/3 border-r h-[90vh] border-gray-300 overflow-y-auto flex flex-col bg-white">
+    <div className="w-full md:w-1/3 border-r h-[90vh] border-gray-300 overflow-y-auto flex flex-col bg-white">
       <div className="relative p-4 flex items-center bg-gray-100">
         <input
           type="text"
@@ -91,7 +91,8 @@ const ChatList = ({ onSelectChat }) => {
                 imageURL={handleAvatar(chat.sender)}
                 sender={chat.sender}
               />
-              <strong>{chat.sender}</strong>: {chat.text}
+              <strong className="truncate w-1/4" >{chat.sender}</strong>
+              <span className="truncate w-4/5 ml-2">{chat.text}</span>
             </div>
           ))
         )}

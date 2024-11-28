@@ -4,7 +4,6 @@ import { FaSearch } from "react-icons/fa";
 import { useSocket } from "./SocketProvider";
 import { IoCloseSharp } from "react-icons/io5";
 
-
 const ChatDetails = ({ chat, onCloseChat }) => {
   const { socket } = useSocket();
   const [state, setState] = useState({
@@ -79,12 +78,12 @@ const ChatDetails = ({ chat, onCloseChat }) => {
   });
 
   const handleChatClose = () => {
-    setState((prev)=>({
+    setState((prev) => ({
       ...prev,
       messages: [],
-    }))
+    }));
     onCloseChat();
-  }
+  };
 
   const { error } = state;
 
@@ -97,8 +96,8 @@ const ChatDetails = ({ chat, onCloseChat }) => {
   }
 
   return (
-    <div className="p-4 flex flex-col w-full h-[90vh]">
-      <div className="flex justify-between items-center">
+    <div className="p-4 flex flex-col w-full h-[90vh] md:w-2/3">
+      <div className="flex justify-between items-center bg-green-200 p-2">
         <h2 className="text-2xl font-bold sticky">{chat.sender}</h2>
         <div className="flex gap-4 items-center">
           <div className="relative flex items-center">
@@ -119,27 +118,29 @@ const ChatDetails = ({ chat, onCloseChat }) => {
           </div>
         </div>
       </div>
-      <div className="flex-grow overflow-y-auto">
+      <div className="flex-grow overflow-y-auto p-4 bg-green-100 ">
         {state.searchQuery?.length > 0 ? (
           filteredChats.length === 0 ? (
-            <div className="mt-2 text-gray-600">
+            <div className="mt-2 text-gray-600 text-center">
               No messages found matching the search query.
             </div>
           ) : (
             filteredChats.map((message) => (
               <div
                 key={message.id}
-                className="mt-2 p-3 bg-white rounded-lg shadow-md"
+                className={`mt-3 p-3 rounded-lg shadow-md max-w-[75%] ${
+                  message.sender === "me" ? "bg-green-100 self-end" : "bg-white"
+                }`}
               >
                 <p className="text-lg">{message.text}</p>
                 {message.sim && (
-                  <p className="text-sm text-gray-600">
+                  <p className="text-sm text-gray-600 mt-1">
                     <strong>SIM:</strong> {message.sim}
                   </p>
                 )}
                 {message.sentStamp && (
-                  <p className="text-sm text-gray-600">
-                    <strong>Sent:</strong> {message.sentStamp}
+                  <p className="text-sm text-gray-600 mt-1 text-right">
+                    {message.sentStamp}
                   </p>
                 )}
               </div>
@@ -149,17 +150,19 @@ const ChatDetails = ({ chat, onCloseChat }) => {
           state.messages.map((message) => (
             <div
               key={message.id}
-              className="mt-2 p-3 bg-white rounded-lg shadow-md"
+              className={`mt-2 p-3 rounded-lg shadow-md max-w-[75%] ${
+                message.sender === "me" ? "bg-green-100 self-end" : "bg-white"
+              }`}
             >
               <p className="text-lg">{message.text}</p>
               {message.sim && (
-                <p className="text-sm text-gray-600">
+                <p className="text-sm text-gray-600 mt-1">
                   <strong>SIM:</strong> {message.sim}
                 </p>
               )}
               {message.sentStamp && (
-                <p className="text-sm text-gray-600">
-                  <strong>Sent:</strong> {message.sentStamp}
+                <p className="text-sm text-gray-600 mt-1 text-right">
+                  {message.sentStamp}
                 </p>
               )}
             </div>
