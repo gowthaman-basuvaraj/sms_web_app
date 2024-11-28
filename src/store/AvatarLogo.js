@@ -6,6 +6,7 @@ const avatar = {
   bigbasket: "../../public/images/bigbasket.jpg",
   blinkit: "../../public/images/blinkit.jpg",
   bsnl: "../../public/images/bsnl.png",
+  canbnk: "../../public/images/canara.png",
   canara: "../../public/images/canara.png",
   digilocker: "../../public/images/digilocker.webp",
   electionCommision: "../../public/images/electionCommision.jpg",

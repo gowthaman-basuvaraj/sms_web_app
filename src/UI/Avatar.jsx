@@ -12,35 +12,35 @@ const Avatar = ({ imageURL, sender }) => {
       />
     </div>
   );
-}
+};
 
 Avatar.propTypes = {
-    imageURL: PropTypes.string.isRequired,
-    sender: PropTypes.string.isRequired,
-}
+  imageURL: PropTypes.string.isRequired,
+  sender: PropTypes.string.isRequired,
+};
 
 export default Avatar;
 
 export const HandleAvatar = (sender) => {
-    const candidates = Object.keys(avatar);
-    const target = sender?.toLowerCase() || "";
+  const candidates = Object.keys(avatar);
+  const target = sender?.toLowerCase() || "";
 
-    let bestMatch = { key: null, score: Infinity };
+  let bestMatch = { key: null, score: Infinity };
 
-    candidates.forEach((key) => {
-      const keyLower = key.toLowerCase();
+  candidates.forEach((key) => {
+    const keyLower = key.toLowerCase();
 
-      if (target.includes(keyLower) || keyLower.includes(target)) {
-        bestMatch = { key, score: 0 };
-        return;
-      }
-      const score = levenshtein.get(target, keyLower);
-      if (score < bestMatch.score) {
-        bestMatch = { key, score };
-      }
-    });
+    if (target.includes(keyLower) || keyLower.includes(target)) {
+      bestMatch = { key, score: 0 };
+      return;
+    }
+    const score = levenshtein.get(target, keyLower);
+    if (score < bestMatch.score) {
+      bestMatch = { key, score };
+    }
+  });
 
-    return bestMatch.key && bestMatch.score < 3
-      ? avatar[bestMatch.key]
-      : avatar.default;
-  };
+  return bestMatch.key && bestMatch.score < 4
+    ? avatar[bestMatch.key]
+    : avatar.default;
+};

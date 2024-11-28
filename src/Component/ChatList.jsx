@@ -3,7 +3,7 @@ import PropTypes from "prop-types";
 import { FaSearch } from "react-icons/fa";
 import Loader from "./Loader";
 import { useSocket } from "./SocketProvider";
-import Avatar, {HandleAvatar} from "../UI/Avatar";
+import Avatar, { HandleAvatar } from "../UI/Avatar";
 
 const ChatList = ({ onSelectChat }) => {
   const { chats, loading, error } = useSocket();
@@ -65,7 +65,7 @@ const ChatList = ({ onSelectChat }) => {
                 imageURL={HandleAvatar(chat.sender)}
                 sender={chat.sender}
               />
-              <strong className="truncate w-1/4" >{chat.sender}</strong>
+              <strong className="truncate w-1/4">{chat.sender}</strong>
               <span className="truncate w-4/5 ml-2">{chat.text}</span>
             </div>
           ))

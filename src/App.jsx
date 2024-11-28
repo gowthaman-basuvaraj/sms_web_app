@@ -28,7 +28,11 @@ const App = () => {
   };
 
   const handleOnCloseChat = () => {
-    setState((prevState) => ({ ...prevState, selectedChat: null, imageURL: null }));
+    setState((prevState) => ({
+      ...prevState,
+      selectedChat: null,
+      imageURL: null,
+    }));
     localStorage.setItem("selectedChat", null);
     localStorage.setItem("imageURL", null);
   };
