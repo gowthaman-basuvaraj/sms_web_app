@@ -29,7 +29,7 @@ const Navbar = () => {
     <nav className="bg-green-600 text-white p-3">
       <div className="flex justify-between items-center">
         <div className="flex items-center space-x-4">
-          <span className="text-xl font-bold">SMS-Web-App</span>
+          <span className="text-xl font-bold">SMS Web App</span>
         </div>
         <div className="flex items-center space-x-2">
           <Select className="flex text-white justify-between gap-5">
@@ -44,7 +44,7 @@ const Navbar = () => {
                 <b>Role:</b> {user?.role}
               </div>
               <button
-                className="w-full text-left py-2 px-3 text-black hover:bg-slate-100 rounded-md"
+                className="w-full text-left py-2 px-3 text-black hover:bg-green-100 rounded-md font-bold"
                 onClick={handleLogout}
               >
                 Logout
