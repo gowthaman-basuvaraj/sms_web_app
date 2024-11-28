@@ -67,13 +67,14 @@ export const SocketProvider = ({ children, handleSelectChat }) => {
         };
       } else if (Notification.permission !== "denied") {
         Notification.requestPermission().then((permission) => {
+          const imageURL = HandleAvatar(newMessage.sender);
           if (permission === "granted") {
             const notification = new Notification("New message received", {
               body: `${newMessage.sender}: ${newMessage.text}`,
             });
 
             notification.onclick = () => {
-              handleSelectChat(newMessage);
+              handleSelectChat(newMessage, imageURL);
               window.focus();
             };
           }
