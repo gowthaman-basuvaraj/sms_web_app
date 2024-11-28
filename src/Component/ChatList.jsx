@@ -52,8 +52,8 @@ const ChatList = ({ onSelectChat }) => {
               onClick={() => handleSelectChat(chat)}
               className={`p-4 flex items-center cursor-pointer ${chat.id == localStorage.getItem("selectedChat") ? "bg-green-200 rounded-md" : ""} hover:bg-green-100`}
             >
-              <strong className="truncate w-1/3">{chat.sender}</strong>
-              <span className="truncate w-2/3 ml-2">{chat.text}</span>
+              <strong className="truncate w-1/4" >{chat.sender}</strong>
+              <span className="truncate w-4/5 ml-2">{chat.text}</span>
             </div>
           ))
         )}

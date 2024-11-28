@@ -97,7 +97,7 @@ const ChatDetails = ({ chat, onCloseChat }) => {
   }
 
   return (
-    <div className="p-4 flex flex-col w-full h-[90vh]  ">
+    <div className="p-4 flex flex-col w-full h-[90vh] md:w-2/3">
       <div className="flex justify-between items-center bg-green-200 p-2">
         <h2 className="text-2xl font-bold sticky">{chat.sender}</h2>
         <div className="flex gap-4 items-center">
