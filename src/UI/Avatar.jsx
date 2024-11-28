@@ -1,4 +1,6 @@
 import PropTypes from "prop-types";
+import avatar from "../store/AvatarLogo";
+import levenshtein from "fast-levenshtein";
 
 const Avatar = ({ imageURL, sender }) => {
   return (
@@ -18,3 +20,27 @@ Avatar.propTypes = {
 }
 
 export default Avatar;
+
+export const HandleAvatar = (sender) => {
+    const candidates = Object.keys(avatar);
+    const target = sender?.toLowerCase() || "";
+
+    let bestMatch = { key: null, score: Infinity };
+
+    candidates.forEach((key) => {
+      const keyLower = key.toLowerCase();
+
+      if (target.includes(keyLower) || keyLower.includes(target)) {
+        bestMatch = { key, score: 0 };
+        return;
+      }
+      const score = levenshtein.get(target, keyLower);
+      if (score < bestMatch.score) {
+        bestMatch = { key, score };
+      }
+    });
+
+    return bestMatch.key && bestMatch.score < 3
+      ? avatar[bestMatch.key]
+      : avatar.default;
+  };

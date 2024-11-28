@@ -1,6 +1,7 @@
 import { createContext, useContext, useEffect, useState } from "react";
 import io from "socket.io-client";
 import PropTypes from "prop-types";
+import { HandleAvatar } from "../UI/Avatar";
 
 const SocketContext = createContext();
 
@@ -58,8 +59,10 @@ export const SocketProvider = ({ children, handleSelectChat }) => {
           body: `${newMessage.sender}: ${newMessage.text}`,
         });
 
+        const imageURL = HandleAvatar(newMessage.sender);
+
         notification.onclick = () => {
-          handleSelectChat(newMessage);
+          handleSelectChat(newMessage, imageURL);
           window.focus();
         };
       } else if (Notification.permission !== "denied") {

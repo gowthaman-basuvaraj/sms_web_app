@@ -3,9 +3,7 @@ import PropTypes from "prop-types";
 import { FaSearch } from "react-icons/fa";
 import Loader from "./Loader";
 import { useSocket } from "./SocketProvider";
-import Avatar from "../UI/Avatar";
-import avatar from "../store/AvatarLogo";
-import levenshtein from "fast-levenshtein";
+import Avatar, {HandleAvatar} from "../UI/Avatar";
 
 const ChatList = ({ onSelectChat }) => {
   const { chats, loading, error } = useSocket();
@@ -24,30 +22,6 @@ const ChatList = ({ onSelectChat }) => {
       chat.sender.toLowerCase().includes(searchQuery.toLowerCase()) ||
       chat.text.toLowerCase().includes(searchQuery.toLowerCase())
   );
-
-  const handleAvatar = (sender) => {
-    const candidates = Object.keys(avatar);
-    const target = sender?.toLowerCase() || "";
-
-    let bestMatch = { key: null, score: Infinity };
-
-    candidates.forEach((key) => {
-      const keyLower = key.toLowerCase();
-
-      if (target.includes(keyLower) || keyLower.includes(target)) {
-        bestMatch = { key, score: 0 };
-        return;
-      }
-      const score = levenshtein.get(target, keyLower);
-      if (score < bestMatch.score) {
-        bestMatch = { key, score };
-      }
-    });
-
-    return bestMatch.key && bestMatch.score < 3
-      ? avatar[bestMatch.key]
-      : avatar.default;
-  };
 
   if (loading) {
     return (
@@ -80,7 +54,7 @@ const ChatList = ({ onSelectChat }) => {
           filteredChats.map((chat) => (
             <div
               key={chat.id}
-              onClick={() => handleSelectChat(chat, handleAvatar(chat.sender))}
+              onClick={() => handleSelectChat(chat, HandleAvatar(chat.sender))}
               className={`p-4 flex items-center cursor-pointer ${
                 chat.id == localStorage.getItem("selectedChat")
                   ? "bg-green-200 rounded-md"
@@ -88,7 +62,7 @@ const ChatList = ({ onSelectChat }) => {
               } hover:bg-green-100`}
             >
               <Avatar
-                imageURL={handleAvatar(chat.sender)}
+                imageURL={HandleAvatar(chat.sender)}
                 sender={chat.sender}
               />
               <strong className="truncate w-1/4" >{chat.sender}</strong>

@@ -24,11 +24,13 @@ const App = () => {
       imageURL: imageURL,
     }));
     localStorage.setItem("selectedChat", chat.id);
+    localStorage.setItem("imageURL", imageURL);
   };
 
   const handleOnCloseChat = () => {
     setState((prevState) => ({ ...prevState, selectedChat: null, imageURL: null }));
     localStorage.setItem("selectedChat", null);
+    localStorage.setItem("imageURL", null);
   };
 
   useEffect(() => {

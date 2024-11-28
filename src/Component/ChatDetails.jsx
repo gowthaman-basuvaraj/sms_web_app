@@ -5,7 +5,7 @@ import { useSocket } from "./SocketProvider";
 import { IoCloseSharp } from "react-icons/io5";
 import Avatar from "../UI/Avatar";
 
-const ChatDetails = ({ chat, imageURL, onCloseChat }) => {
+const ChatDetails = ({ chat, onCloseChat }) => {
   const { socket } = useSocket();
   const [state, setState] = useState({
     messages: [],
@@ -104,7 +104,7 @@ const ChatDetails = ({ chat, imageURL, onCloseChat }) => {
     <div className="p-4 flex flex-col w-full h-[90vh] md:w-2/3">
       <div className="flex justify-between items-center bg-green-200 p-2">
         <div className="flex gap-2 items-center">
-          <Avatar imageURL={imageURL} sender={chat.sender} />
+          <Avatar imageURL={localStorage.getItem("imageURL")} sender={chat.sender} />
           <h2 className="text-2xl font-bold sticky">{chat.sender}</h2>
         </div>
         <div className="flex gap-4 items-center">
