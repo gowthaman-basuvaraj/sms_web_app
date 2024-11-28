@@ -8,7 +8,7 @@ export const handleAccess = async (setState) => {
   const isTokenExpired = (token) => {
     const decoded = jwtDecode(token);
     const currentTime = Math.floor(Date.now() / 1000);
-    return decoded.exp < currentTime;
+    return decoded.exp < currentTime - 300;
   };
 
   if (!token || isTokenExpired(token)) {

@@ -3,6 +3,9 @@ import PropTypes from "prop-types";
 import { FaSearch } from "react-icons/fa";
 import Loader from "./Loader";
 import { useSocket } from "./SocketProvider";
+import Avatar from "../UI/Avatar";
+import avatar from "../store/AvatarLogo";
+import levenshtein from "fast-levenshtein";
 
 const ChatList = ({ onSelectChat }) => {
   const { chats, loading, error } = useSocket();
@@ -22,8 +25,36 @@ const ChatList = ({ onSelectChat }) => {
       chat.text.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
+  const handleAvatar = (sender) => {
+    const candidates = Object.keys(avatar);
+    const target = sender?.toLowerCase() || "";
+
+    let bestMatch = { key: null, score: Infinity };
+
+    candidates.forEach((key) => {
+      const keyLower = key.toLowerCase();
+
+      if (target.includes(keyLower) || keyLower.includes(target)) {
+        bestMatch = { key, score: 0 };
+        return;
+      }
+      const score = levenshtein.get(target, keyLower);
+      if (score < bestMatch.score) {
+        bestMatch = { key, score };
+      }
+    });
+
+    return bestMatch.key && bestMatch.score < 3
+      ? avatar[bestMatch.key]
+      : avatar.default;
+  };
+
   if (loading) {
-    return <div className="p-4"><Loader /></div>;
+    return (
+      <div className="p-4">
+        <Loader />
+      </div>
+    );
   }
 
   if (error) {
@@ -50,8 +81,16 @@ const ChatList = ({ onSelectChat }) => {
             <div
               key={chat.id}
               onClick={() => handleSelectChat(chat)}
-              className={`p-4 flex items-center cursor-pointer ${chat.id == localStorage.getItem("selectedChat") ? "bg-green-200 rounded-md" : ""} hover:bg-green-100`}
+              className={`p-4 flex items-center cursor-pointer ${
+                chat.id == localStorage.getItem("selectedChat")
+                  ? "bg-green-200 rounded-md"
+                  : ""
+              } hover:bg-green-100`}
             >
+              <Avatar
+                imageURL={handleAvatar(chat.sender)}
+                sender={chat.sender}
+              />
               <strong>{chat.sender}</strong>: {chat.text}
             </div>
           ))
