@@ -3,8 +3,9 @@ import PropTypes from "prop-types";
 import { FaSearch } from "react-icons/fa";
 import { useSocket } from "./SocketProvider";
 import { IoCloseSharp } from "react-icons/io5";
+import Avatar from "../UI/Avatar";
 
-const ChatDetails = ({ chat, onCloseChat }) => {
+const ChatDetails = ({ chat, imageURL, onCloseChat }) => {
   const { socket } = useSocket();
   const [state, setState] = useState({
     messages: [],
@@ -88,7 +89,7 @@ const ChatDetails = ({ chat, onCloseChat }) => {
   const { error } = state;
 
   if (!chat) {
-    return <div className="p-4">Select a chat to view details</div>;
+    return <div className="p-4 font-bold flex flex-col items-center w-full">Select a chat to view details!!</div>;
   }
 
   if (error) {
@@ -98,7 +99,10 @@ const ChatDetails = ({ chat, onCloseChat }) => {
   return (
     <div className="p-4 flex flex-col w-full h-[90vh] md:w-2/3">
       <div className="flex justify-between items-center bg-green-200 p-2">
-        <h2 className="text-2xl font-bold sticky">{chat.sender}</h2>
+        <div className="flex gap-2 items-center">
+          <Avatar imageURL={imageURL} sender={chat.sender} />
+          <h2 className="text-2xl font-bold sticky">{chat.sender}</h2>
+        </div>
         <div className="flex gap-4 items-center">
           <div className="relative flex items-center">
             <input
@@ -181,6 +185,7 @@ ChatDetails.propTypes = {
     sentStamp: PropTypes.string,
   }),
   onCloseChat: PropTypes.func.isRequired,
+  imageURL: PropTypes.string,
 };
 
 export default ChatDetails;

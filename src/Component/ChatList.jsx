@@ -15,8 +15,8 @@ const ChatList = ({ onSelectChat }) => {
     setSearchQuery(event.target.value);
   };
 
-  const handleSelectChat = (chat) => {
-    onSelectChat(chat);
+  const handleSelectChat = (chat, imageURL) => {
+    onSelectChat(chat, imageURL);
   };
 
   const filteredChats = chats.filter(
@@ -80,7 +80,7 @@ const ChatList = ({ onSelectChat }) => {
           filteredChats.map((chat) => (
             <div
               key={chat.id}
-              onClick={() => handleSelectChat(chat)}
+              onClick={() => handleSelectChat(chat, handleAvatar(chat.sender))}
               className={`p-4 flex items-center cursor-pointer ${
                 chat.id == localStorage.getItem("selectedChat")
                   ? "bg-green-200 rounded-md"

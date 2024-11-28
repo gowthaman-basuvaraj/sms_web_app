@@ -10,19 +10,24 @@ const App = () => {
   const [state, setState] = useState({
     selectedChat: null,
     haveAccess: false,
+    imageURL: null,
     user: {
       name: "",
       role: "",
     },
   });
 
-  const handleSelectChat = (chat) => {
-    setState((prevState) => ({ ...prevState, selectedChat: chat }));
+  const handleSelectChat = (chat, imageURL) => {
+    setState((prevState) => ({
+      ...prevState,
+      selectedChat: chat,
+      imageURL: imageURL,
+    }));
     localStorage.setItem("selectedChat", chat.id);
   };
 
   const handleOnCloseChat = () => {
-    setState((prevState) => ({ ...prevState, selectedChat: null }));
+    setState((prevState) => ({ ...prevState, selectedChat: null, imageURL: null }));
     localStorage.setItem("selectedChat", null);
   };
 
@@ -42,11 +47,10 @@ const App = () => {
                   path="/"
                   element={
                     <>
-                      <ChatList
-                        onSelectChat={handleSelectChat}
-                      />
+                      <ChatList onSelectChat={handleSelectChat} />
                       <ChatDetails
                         chat={state.selectedChat}
+                        imageURL={state.imageURL}
                         onCloseChat={handleOnCloseChat}
                       />
                     </>
