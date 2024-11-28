@@ -20,7 +20,9 @@ export const RefreshToken = async () => {
 
   try {
     const response = await fetch(
-      `${import.meta.env.VITE_KEYCLOAK_URL}/realms/${import.meta.env.VITE_KEYCLOAK_REALM}/protocol/openid-connect/token`,
+      `${import.meta.env.VITE_KEYCLOAK_URL}/realms/${
+        import.meta.env.VITE_KEYCLOAK_REALM
+      }/protocol/openid-connect/token`,
       {
         method: "POST",
         headers: { "Content-Type": "application/x-www-form-urlencoded" },
