@@ -89,7 +89,11 @@ const ChatDetails = ({ chat, imageURL, onCloseChat }) => {
   const { error } = state;
 
   if (!chat) {
-    return <div className="p-4 font-bold flex flex-col items-center w-full">Select a chat to view details!!</div>;
+    return (
+      <div className="p-4 flex flex-col w-full h-[90vh] md:w-2/3 font-bold items-center">
+        Select a chat to view details !
+      </div>
+    );
   }
 
   if (error) {
@@ -138,12 +142,12 @@ const ChatDetails = ({ chat, imageURL, onCloseChat }) => {
               >
                 <p className="text-lg">{message.text}</p>
                 {message.sim && (
-                  <p className="text-sm text-gray-600 mt-1">
+                  <p className="text-md text-black mt-1">
                     <strong>SIM:</strong> {message.sim}
                   </p>
                 )}
                 {message.sentStamp && (
-                  <p className="text-sm text-gray-600 mt-1 text-right">
+                  <p className="text-md  mt-1 text-right">
                     {message.sentStamp}
                   </p>
                 )}
@@ -160,14 +164,12 @@ const ChatDetails = ({ chat, imageURL, onCloseChat }) => {
             >
               <p className="text-lg">{message.text}</p>
               {message.sim && (
-                <p className="text-sm text-gray-600 mt-1">
+                <p className="text-md text-black mt-1">
                   <strong>SIM:</strong> {message.sim}
                 </p>
               )}
               {message.sentStamp && (
-                <p className="text-sm text-gray-600 mt-1 text-right">
-                  {message.sentStamp}
-                </p>
+                <p className="text-md  mt-1 text-right">{message.sentStamp}</p>
               )}
             </div>
           ))
