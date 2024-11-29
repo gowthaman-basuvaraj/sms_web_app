@@ -101,7 +101,7 @@ const ChatDetails = ({ chat, onCloseChat }) => {
   }
 
   return (
-    <div className="p-4 flex flex-col w-full h-[90vh] md:w-2/3">
+    <div className="flex flex-col w-full h-[90vh] flex-wrap">
       <div className="flex justify-between items-center bg-green-200 p-2">
         <div className="flex gap-2 items-center">
           <Avatar

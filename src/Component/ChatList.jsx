@@ -37,7 +37,7 @@ const ChatList = ({ onSelectChat }) => {
   }
 
   return (
-    <div className="w-full md:w-1/3 border-r h-[90vh] border-gray-300 overflow-y-auto flex flex-col bg-white">
+    <div className="w-full border-r h-[90vh] border-gray-300 overflow-y-auto flex flex-col bg-white">
       <div className="relative p-4 flex items-center bg-gray-100">
         <input
           type="text"

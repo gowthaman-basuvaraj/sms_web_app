@@ -15,6 +15,7 @@ const App = () => {
       name: "",
       role: "",
     },
+    chatListWidth: 450,
   });
 
   const handleSelectChat = (chat, imageURL) => {
@@ -37,6 +38,17 @@ const App = () => {
     localStorage.setItem("imageURL", null);
   };
 
+  const handleResize = (e) => {
+    const newWidth = Math.min(
+      Math.max(200, e.clientX), // Minimum width is 200px
+      window.innerWidth * 0.5 // Maximum width is 50% of the screen
+    );
+    setState((prevState)=>({
+      ...prevState,
+      chatListWidth: newWidth,
+    })) 
+  };
+
   useEffect(() => {
     handleAccess(setState);
   }, []);
@@ -52,14 +64,38 @@ const App = () => {
                 <Route
                   path="/"
                   element={
-                    <>
-                      <ChatList onSelectChat={handleSelectChat} />
-                      <ChatDetails
-                        chat={state.selectedChat}
-                        imageURL={state.imageURL}
-                        onCloseChat={handleOnCloseChat}
-                      />
-                    </>
+                    <div
+                      className="grid grid-cols-[auto_1fr] h-full"
+                      style={{ gridTemplateColumns: `${state.chatListWidth}px 1fr` }}
+                    >
+                      {/* Chat List */}
+                      <div className="relative h-full">
+                        <ChatList onSelectChat={handleSelectChat} />
+                        <div
+                          className="absolute top-0 right-0 h-full w-1 cursor-col-resize bg-gray-300 hover:bg-gray-400"
+                          onMouseDown={(e) => {
+                            e.preventDefault();
+                            document.addEventListener("mousemove", handleResize);
+                            document.addEventListener("mouseup", () =>
+                              document.removeEventListener(
+                                "mousemove",
+                                handleResize
+                              )
+                            );
+                          }}
+                        ></div>
+                      </div>
+
+                      <div className="h-full" style={{
+                          width: `calc(100vw - ${state.chatListWidth}px)`,
+                        }}>
+                        <ChatDetails
+                          chat={state.selectedChat}
+                          imageURL={state.imageURL}
+                          onCloseChat={handleOnCloseChat}
+                        />
+                      </div>
+                    </div>
                   }
                 />
               ) : (
