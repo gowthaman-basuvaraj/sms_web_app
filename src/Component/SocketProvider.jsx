@@ -12,6 +12,7 @@ export const SocketProvider = ({ children, handleSelectChat }) => {
     chats: [],
     loading: true,
     error: null,
+    readChats: [],
   });
 
   useEffect(() => {
@@ -23,12 +24,22 @@ export const SocketProvider = ({ children, handleSelectChat }) => {
         const data = await response.json();
 
         if (data.status === "success" && Array.isArray(data.messages)) {
-          setState({ chats: data.messages, loading: false, error: null });
+          setState((prevState) => ({
+            ...prevState,
+            chats: data.messages,
+            loading: false,
+            error: null,
+          }));
         } else {
           throw new Error("Unexpected data format");
         }
       } catch (error) {
-        setState({ chats: [], loading: false, error: "Failed to fetch chats" });
+        setState((prevState) => ({
+          ...prevState,
+          chats: [],
+          loading: false,
+          error: "Failed to fetch chats",
+        }));
         console.error("Failed to fetch chats:", error);
       }
     };
@@ -43,6 +54,7 @@ export const SocketProvider = ({ children, handleSelectChat }) => {
           (chat) => chat.sender !== newMessage.sender
         );
         return {
+          ...prevState,
           chats: [newMessage, ...updatedChats],
           loading: false,
           error: null,
@@ -87,8 +99,17 @@ export const SocketProvider = ({ children, handleSelectChat }) => {
     };
   }, [handleSelectChat]);
 
+  const markAsRead = (chatId) => {
+    setState((prevState) => ({
+      ...prevState,
+      readChats: [...prevState.readChats, chatId],
+    }));
+  };
+
   return (
-    <SocketContext.Provider value={state}>{children}</SocketContext.Provider>
+    <SocketContext.Provider value={{ ...state, markAsRead }}>
+      {children}
+    </SocketContext.Provider>
   );
 };
 

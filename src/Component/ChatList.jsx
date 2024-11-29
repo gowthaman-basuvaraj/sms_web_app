@@ -6,7 +6,7 @@ import { useSocket } from "./SocketProvider";
 import Avatar, { HandleAvatar } from "../UI/Avatar";
 
 const ChatList = ({ onSelectChat }) => {
-  const { chats, loading, error } = useSocket();
+  const { chats, loading, error, readChats, markAsRead } = useSocket();
   const [searchQuery, setSearchQuery] = useState("");
 
   const handleSearchChange = (event) => {
@@ -14,6 +14,7 @@ const ChatList = ({ onSelectChat }) => {
   };
 
   const handleSelectChat = (chat, imageURL) => {
+    markAsRead(chat.id);
     onSelectChat(chat, imageURL);
   };
 
@@ -51,24 +52,37 @@ const ChatList = ({ onSelectChat }) => {
         {filteredChats.length === 0 ? (
           <div className="p-4">No chats available</div>
         ) : (
-          filteredChats.map((chat) => (
-            <div
-              key={chat.id}
-              onClick={() => handleSelectChat(chat, HandleAvatar(chat.sender))}
-              className={`p-4 flex items-center cursor-pointer ${
-                chat.id == localStorage.getItem("selectedChat")
-                  ? "bg-green-200 rounded-md"
-                  : ""
-              } hover:bg-green-100`}
-            >
-              <Avatar
-                imageURL={HandleAvatar(chat.sender)}
-                sender={chat.sender}
-              />
-              <strong className="truncate w-1/4">{chat.sender}</strong>
-              <span className="truncate w-4/5 ml-2">{chat.text}</span>
-            </div>
-          ))
+          filteredChats.map((chat) => {
+            const unreadCount = chats.filter(
+              (c) => c.sender === chat.sender && !readChats.includes(c.id)
+            ).length;
+
+            return (
+              <div
+                key={chat.id}
+                onClick={() => handleSelectChat(chat, HandleAvatar(chat.sender))}
+                className={`p-4 flex items-center cursor-pointer ${
+                  chat.id == localStorage.getItem("selectedChat")
+                    ? "bg-green-200 rounded-md"
+                    : ""
+                } hover:bg-green-100 ${
+                  readChats.includes(chat.id) ? "font-normal" : "font-bold"
+                }`}
+              >
+                <Avatar
+                  imageURL={HandleAvatar(chat.sender)}
+                  sender={chat.sender}
+                />
+                <strong className="truncate w-1/4">{chat.sender}</strong>
+                <span className="truncate w-4/5 ml-2">{chat.text}</span>
+                {unreadCount > 0 && (
+                  <span className="ml-2 bg-red-500 text-white rounded-full px-2 py-1 text-xs">
+                    {unreadCount}
+                  </span>
+                )}
+              </div>
+            );
+          })
         )}
       </div>
     </div>
