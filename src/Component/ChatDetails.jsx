@@ -44,21 +44,21 @@ const ChatDetails = ({ chat, onCloseChat }) => {
     fetchMessages();
 
     if (socket) {
-      socket.on("newMessage", (newMessage) => {
+      const handleNewMessage = (newMessage) => {
         if (newMessage.sender === chat.sender) {
           setState((prevState) => ({
             messages: [...prevState.messages, newMessage],
             error: null,
           }));
         }
-      });
-    }
+      };
 
-    return () => {
-      if (socket) {
-        socket.off("newMessage");
-      }
-    };
+      socket.on("newMessage", handleNewMessage);
+
+      return () => {
+        socket.off("newMessage", handleNewMessage);
+      };
+    }
   }, [chat, socket]);
 
   const handleSearchChange = (event) => {
