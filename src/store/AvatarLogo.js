@@ -31,7 +31,7 @@ const avatar = {
   paytm: "../../public/images/paytm.jpg",
   phonePe: "../../public/images/phonePe.png",
   pnb: "../../public/images/pnb.png",
-  "punjabnationalbank: ": "../../public/images/pnb.png",
+  "punjabnationalbank": "../../public/images/pnb.png",
   prime: "../../public/images/prime.webp",
   rbi: "../../public/images/rbi.jpg",
   relianceDigital: "../../public/images/relianceDigital.jpg",
