@@ -1,41 +1,30 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import ChatList from "./Component/ChatList";
 import ChatDetails from "./Component/ChatDetails";
 import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
 import Navbar from "./Component/Navbar";
 import { SocketProvider } from "./Component/SocketProvider";
-import { handleAccess } from "./store/AccessHandle";
+import { HandleAccess } from "./store/AccessHandle";
+import { useDispatch, useSelector } from "react-redux";
+import { setImageURl, setSelectedChat } from "./store/Store";
 
 const App = () => {
+  const dispatch = useDispatch();
+
   const [state, setState] = useState({
-    selectedChat: null,
-    haveAccess: false,
-    imageURL: null,
-    user: {
-      name: "",
-      role: "",
-    },
     chatListWidth: 450,
   });
 
+  const { haveAccess, imageURL, selectedChat } = useSelector((state) => state.auth);
+
   const handleSelectChat = (chat, imageURL) => {
-    setState((prevState) => ({
-      ...prevState,
-      selectedChat: chat,
-      imageURL: imageURL,
-    }));
-    localStorage.setItem("selectedChat", chat.id);
-    localStorage.setItem("imageURL", imageURL);
+    dispatch(setSelectedChat(chat.id));
+    dispatch(setImageURl(imageURL));
   };
 
   const handleOnCloseChat = () => {
-    setState((prevState) => ({
-      ...prevState,
-      selectedChat: null,
-      imageURL: null,
-    }));
-    localStorage.setItem("selectedChat", null);
-    localStorage.setItem("imageURL", null);
+    dispatch(setSelectedChat(null));
+    dispatch(setImageURl(null));
   };
 
   const handleResize = (e) => {
@@ -43,30 +32,29 @@ const App = () => {
       Math.max(200, e.clientX), // Minimum width is 200px
       window.innerWidth * 0.5 // Maximum width is 50% of the screen
     );
-    setState((prevState)=>({
+    setState((prevState) => ({
       ...prevState,
       chatListWidth: newWidth,
-    })) 
+    }));
   };
-
-  useEffect(() => {
-    handleAccess(setState);
-  }, []);
 
   return (
     <SocketProvider handleSelectChat={handleSelectChat}>
       <Router>
+        <HandleAccess />
         <div className="flex flex-col h-screen">
           <Navbar />
           <div className="flex flex-grow">
             <Routes>
-              {state.haveAccess ? (
+              {haveAccess ? (
                 <Route
                   path="/"
                   element={
                     <div
                       className="grid grid-cols-[auto_1fr] h-full"
-                      style={{ gridTemplateColumns: `${state.chatListWidth}px 1fr` }}
+                      style={{
+                        gridTemplateColumns: `${state.chatListWidth}px 1fr`,
+                      }}
                     >
                       {/* Chat List */}
                       <div className="relative h-full">
@@ -75,7 +63,10 @@ const App = () => {
                           className="absolute top-0 right-0 h-full w-1 cursor-col-resize bg-gray-300 hover:bg-gray-400"
                           onMouseDown={(e) => {
                             e.preventDefault();
-                            document.addEventListener("mousemove", handleResize);
+                            document.addEventListener(
+                              "mousemove",
+                              handleResize
+                            );
                             document.addEventListener("mouseup", () =>
                               document.removeEventListener(
                                 "mousemove",
@@ -86,12 +77,15 @@ const App = () => {
                         ></div>
                       </div>
 
-                      <div className="h-full" style={{
+                      <div
+                        className="h-full"
+                        style={{
                           width: `calc(100vw - ${state.chatListWidth}px)`,
-                        }}>
+                        }}
+                      >
                         <ChatDetails
-                          chat={state.selectedChat}
-                          imageURL={state.imageURL}
+                          chat={selectedChat}
+                          imageURL={imageURL}
                           onCloseChat={handleOnCloseChat}
                         />
                       </div>

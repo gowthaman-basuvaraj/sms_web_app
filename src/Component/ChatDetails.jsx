@@ -4,8 +4,9 @@ import { FaSearch } from "react-icons/fa";
 import { useSocket } from "./SocketProvider";
 import { IoCloseSharp } from "react-icons/io5";
 import Avatar from "../UI/Avatar";
+import { useSelector } from "react-redux";
 
-const ChatDetails = ({ chat, onCloseChat }) => {
+const ChatDetails = ({ onCloseChat }) => {
   const { socket } = useSocket();
   const [state, setState] = useState({
     messages: [],
@@ -13,8 +14,10 @@ const ChatDetails = ({ chat, onCloseChat }) => {
     searchQuery: "",
   });
 
+  const {SelectedChat, imageURL } = useSelector((state) => state.auth);
+
   useEffect(() => {
-    if (!chat) {
+    if (!SelectedChat) {
       setState({ messages: [], error: null });
       return;
     }
@@ -23,7 +26,7 @@ const ChatDetails = ({ chat, onCloseChat }) => {
       setState({ messages: [], error: null });
       try {
         const response = await fetch(
-          `${import.meta.env.VITE_BACKEND_API}/messages?sender=${chat.sender}`
+          `${import.meta.env.VITE_BACKEND_API}/messages?sender=${SelectedChat.sender}`
         );
         const data = await response.json();
 
@@ -45,7 +48,7 @@ const ChatDetails = ({ chat, onCloseChat }) => {
 
     if (socket) {
       const handleNewMessage = (newMessage) => {
-        if (newMessage.sender === chat.sender) {
+        if (newMessage.sender === SelectedChat.sender) {
           setState((prevState) => ({
             messages: [...prevState.messages, newMessage],
             error: null,
@@ -59,7 +62,7 @@ const ChatDetails = ({ chat, onCloseChat }) => {
         socket.off("newMessage", handleNewMessage);
       };
     }
-  }, [chat, socket]);
+  }, [SelectedChat, socket]);
 
   const handleSearchChange = (event) => {
     setState((prevState) => ({
@@ -88,7 +91,7 @@ const ChatDetails = ({ chat, onCloseChat }) => {
 
   const { error } = state;
 
-  if (!chat) {
+  if (!SelectedChat) {
     return (
       <div className="p-4 flex flex-col w-full h-[90vh] md:w-2/3 font-bold items-center">
         Select a chat to view details !
@@ -105,10 +108,10 @@ const ChatDetails = ({ chat, onCloseChat }) => {
       <div className="flex justify-between items-center bg-green-200 p-2">
         <div className="flex gap-2 items-center">
           <Avatar
-            imageURL={localStorage.getItem("imageURL")}
-            sender={chat.sender}
+            imageURL={imageURL}
+            sender={SelectedChat.sender}
           />
-          <h2 className="text-2xl font-bold sticky">{chat.sender}</h2>
+          <h2 className="text-2xl font-bold sticky">{SelectedChat.sender}</h2>
         </div>
         <div className="flex gap-4 items-center">
           <div className="relative flex items-center">

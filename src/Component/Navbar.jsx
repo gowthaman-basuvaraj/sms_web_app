@@ -1,28 +1,29 @@
 import { FaRegUserCircle } from "react-icons/fa";
 import { Select, SelectContent, SelectTrigger } from "../UI/select";
-import AuthContext from "../store/Auth";
-import { useContext } from "react";
+import { useSelector } from "react-redux";
+import { Logout } from "../store/Auth";
+import { useDispatch } from "react-redux";
+import {
+  setToken,
+  setRefreshToken,
+  setUser,
+  setHaveAccess,
+} from "../store/Store";
 
 const Navbar = () => {
-  const user = JSON.parse(localStorage.getItem("user"));
-
-  const { keycloak } = useContext(AuthContext);
+  const { user } = useSelector((state) => state.auth);
+  const dispatch = useDispatch();
 
   const handleLogout = () => {
     console.log("Attempting to log out...");
-    if (keycloak) {
-      console.log("Logging out...");
-      keycloak
-        .logout()
-        .then(() => {
-          console.log("Logout successful");
-        })
-        .catch((error) => {
-          console.error("Logout failed:", error);
-        });
-    } else {
-      console.error("Keycloak instance not found");
-    }
+    const handleLoggingout = () => {
+      dispatch(setToken(""));
+      dispatch(setRefreshToken(""));
+      dispatch(setUser({ name: "", role: "" }));
+      dispatch(setHaveAccess(false));
+      Logout();
+    };
+    handleLoggingout();
   };
 
   return (
