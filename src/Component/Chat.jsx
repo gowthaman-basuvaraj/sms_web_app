@@ -1,8 +1,8 @@
 import { useState } from "react";
 import ChatList from "./ChatList";
 import ChatDetails from "./ChatDetails";
-import { useDispatch, useSelector } from "react-redux";
-import { setImageURl, setSelectedChat } from "../store/Store";
+import { useDispatch } from "react-redux";
+import { setImageURL, setSelectedChat } from "../store/Store";
 
 export default function Chat() {
   const [state, setState] = useState({
@@ -10,16 +10,10 @@ export default function Chat() {
   });
   const dispatch = useDispatch();
 
-  const { imageURL, selectedChat } = useSelector((state) => state.auth);
-
   const handleSelectChat = (chat, imageURL) => {
-    dispatch(setSelectedChat(chat.id));
-    dispatch(setImageURl(imageURL));
-  };
-
-  const handleOnCloseChat = () => {
-    dispatch(setSelectedChat(null));
-    dispatch(setImageURl(null));
+    dispatch(setSelectedChat(chat));
+    dispatch(setImageURL(imageURL));
+    console.log("Selected chat in chatlist:", chat);
   };
 
   const handleResize = (e) => {
@@ -61,11 +55,7 @@ export default function Chat() {
             width: `calc(100vw - ${state.chatListWidth}px)`,
           }}
         >
-          <ChatDetails
-            chat={selectedChat}
-            imageURL={imageURL}
-            onCloseChat={handleOnCloseChat}
-          />
+          <ChatDetails />
         </div>
       </div>
     </>

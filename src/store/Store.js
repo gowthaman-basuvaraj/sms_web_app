@@ -10,8 +10,13 @@ const authSlice = createSlice({
       name: "",
       role: "",
     },
-    imageURl: "",
-    selectedChat: null,
+    imageURL: "",
+    selectedChat: {
+      id: 0,
+      sender: "",
+      sim: "",
+      mute: true,
+    },
     keyclock: {
       token: "",
       refresh_token: "",
@@ -36,11 +41,13 @@ const authSlice = createSlice({
     setUser: (state, action) => {
       state.user = action.payload;
     },
-    setImageURl: (state, action) => {
-      state.imageURl = action.payload;
+    setImageURL: (state, action) => {
+      state.imageURL = action.payload;
     },
     setSelectedChat: (state, action) => {
-      state.selectedChat = action.payload;
+      const { id, sender, sim, mute } = action.payload;
+      console.log("Setting selected chat in store", id, sender, sim, mute);
+      state.selectedChat = { id, sender, sim, mute };
     },
     setKeyclock: (state, action) => {
       const {
@@ -73,7 +80,7 @@ export const {
   setRefreshToken,
   setHaveAccess,
   setUser,
-  setImageURl,
+  setImageURL,
   setSelectedChat,
   setKeyclock,
 } = authSlice.actions;

@@ -2,6 +2,7 @@ import { createContext, useContext, useEffect, useState } from "react";
 import io from "socket.io-client";
 import PropTypes from "prop-types";
 import { HandleAvatar } from "../UI/Avatar";
+import { useSelector } from "react-redux";
 
 const SocketContext = createContext();
 
@@ -14,6 +15,8 @@ export const SocketProvider = ({ children, handleSelectChat }) => {
     error: null,
     readChats: [],
   });
+
+  const { selectedChat } = useSelector((state) => state.auth);
 
   useEffect(() => {
     const fetchChats = async () => {
@@ -62,8 +65,10 @@ export const SocketProvider = ({ children, handleSelectChat }) => {
       });
 
       // Play notification sound
-      const audio = new Audio("/sound.mp3");
-      audio.play();
+      if(!selectedChat.mute){
+        const audio = new Audio("/sound.mp3");
+        audio.play();
+      }
 
       // Show desktop notification
       if (Notification.permission === "granted") {

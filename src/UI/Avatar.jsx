@@ -4,7 +4,7 @@ import levenshtein from "fast-levenshtein";
 
 const Avatar = ({ imageURL, sender }) => {
   return (
-    <div className="p-2 h-8 w-8">
+    <div className="p-2 h-12 w-12">
       <img
         src={imageURL}
         alt={sender}

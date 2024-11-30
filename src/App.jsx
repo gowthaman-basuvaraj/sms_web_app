@@ -3,7 +3,7 @@ import Navbar from "./Component/Navbar";
 import { SocketProvider } from "./Component/SocketProvider";
 import { HandleAccess } from "./store/AccessHandle";
 import { useDispatch, useSelector } from "react-redux";
-import { setImageURl, setSelectedChat } from "./store/Store";
+import { setImageURL, setSelectedChat } from "./store/Store";
 import Chat from "./Component/Chat";
 
 const App = () => {
@@ -12,8 +12,8 @@ const App = () => {
   const { haveAccess } = useSelector((state) => state.auth);
 
   const handleSelectChat = (chat, imageURL) => {
-    dispatch(setSelectedChat(chat.id));
-    dispatch(setImageURl(imageURL));
+    dispatch(setSelectedChat(chat));
+    dispatch(setImageURL(imageURL));
   };
 
   return (

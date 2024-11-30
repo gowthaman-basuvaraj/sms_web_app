@@ -10,7 +10,7 @@ const ChatList = ({ onSelectChat }) => {
   const { chats, loading, error, readChats, markAsRead } = useSocket();
   const [searchQuery, setSearchQuery] = useState("");
 
-  const {selectedChat } = useSelector((state) => state.auth);
+  const { selectedChat } = useSelector((state) => state.auth);
 
   const handleSearchChange = (event) => {
     setSearchQuery(event.target.value);
@@ -20,6 +20,8 @@ const ChatList = ({ onSelectChat }) => {
     markAsRead(chat.id);
     onSelectChat(chat, imageURL);
   };
+
+  console.log("SelectedChat in ChatList:", selectedChat);
 
   const filteredChats = chats.filter(
     (chat) =>
@@ -63,11 +65,11 @@ const ChatList = ({ onSelectChat }) => {
             return (
               <div
                 key={chat.id}
-                onClick={() => handleSelectChat(chat, HandleAvatar(chat.sender))}
+                onClick={() =>
+                  handleSelectChat(chat, HandleAvatar(chat.sender))
+                }
                 className={`p-4 flex items-center cursor-pointer ${
-                  chat.id == selectedChat
-                    ? "bg-green-200 rounded-md"
-                    : ""
+                  chat.id == selectedChat ? "bg-green-200 rounded-md" : ""
                 } hover:bg-green-100 ${
                   readChats.includes(chat.id) ? "font-normal" : "font-bold"
                 }`}

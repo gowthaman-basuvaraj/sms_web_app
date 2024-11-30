@@ -1,23 +1,39 @@
 import { useEffect, useState } from "react";
-import PropTypes from "prop-types";
 import { FaSearch } from "react-icons/fa";
 import { useSocket } from "./SocketProvider";
 import { IoCloseSharp } from "react-icons/io5";
 import Avatar from "../UI/Avatar";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
+import { setImageURL, setSelectedChat } from "../store/Store";
 
-const ChatDetails = ({ onCloseChat }) => {
+const ChatDetails = () => {
   const { socket } = useSocket();
+  const { selectedChat, imageURL, user } = useSelector((state) => state.auth);
+
   const [state, setState] = useState({
     messages: [],
     error: null,
     searchQuery: "",
   });
 
-  const {SelectedChat, imageURL } = useSelector((state) => state.auth);
+  const dispatch = useDispatch();
+
+  console.log("mute status:", selectedChat.mute);
+
+  const handleOnCloseChat = () => {
+    dispatch(
+      setSelectedChat({
+        id: 0,
+        sender: "",
+        sim: "",
+        mute: selectedChat.mute,
+      })
+    );
+    dispatch(setImageURL(""));
+  };
 
   useEffect(() => {
-    if (!SelectedChat) {
+    if (!selectedChat) {
       setState({ messages: [], error: null });
       return;
     }
@@ -26,7 +42,9 @@ const ChatDetails = ({ onCloseChat }) => {
       setState({ messages: [], error: null });
       try {
         const response = await fetch(
-          `${import.meta.env.VITE_BACKEND_API}/messages?sender=${SelectedChat.sender}`
+          `${import.meta.env.VITE_BACKEND_API}/messages?sender=${
+            selectedChat.sender
+          }`
         );
         const data = await response.json();
 
@@ -48,7 +66,7 @@ const ChatDetails = ({ onCloseChat }) => {
 
     if (socket) {
       const handleNewMessage = (newMessage) => {
-        if (newMessage.sender === SelectedChat.sender) {
+        if (newMessage.sender === selectedChat.sender) {
           setState((prevState) => ({
             messages: [...prevState.messages, newMessage],
             error: null,
@@ -62,7 +80,7 @@ const ChatDetails = ({ onCloseChat }) => {
         socket.off("newMessage", handleNewMessage);
       };
     }
-  }, [SelectedChat, socket]);
+  }, [selectedChat, socket]);
 
   const handleSearchChange = (event) => {
     setState((prevState) => ({
@@ -86,12 +104,17 @@ const ChatDetails = ({ onCloseChat }) => {
       ...prev,
       messages: [],
     }));
-    onCloseChat();
+    handleOnCloseChat();
+  };
+
+  const handleUserMutePreference = () => {
+    dispatch(setSelectedChat({ ...selectedChat, mute: !selectedChat.mute }));
+    console.log("Mute status changed:", selectedChat.mute);
   };
 
   const { error } = state;
 
-  if (!SelectedChat) {
+  if (selectedChat.id === 0) {
     return (
       <div className="p-4 flex flex-col w-full h-[90vh] md:w-2/3 font-bold items-center">
         Select a chat to view details !
@@ -104,96 +127,102 @@ const ChatDetails = ({ onCloseChat }) => {
   }
 
   return (
-    <div className="flex flex-col w-full h-[90vh] flex-wrap">
-      <div className="flex justify-between items-center bg-green-200 p-2">
-        <div className="flex gap-2 items-center">
-          <Avatar
-            imageURL={imageURL}
-            sender={SelectedChat.sender}
-          />
-          <h2 className="text-2xl font-bold sticky">{SelectedChat.sender}</h2>
-        </div>
-        <div className="flex gap-4 items-center">
-          <div className="relative flex items-center">
-            <input
-              type="text"
-              placeholder="Search messages..."
-              value={state.searchQuery}
-              onChange={handleSearchChange}
-              className="w-full py-2 pl-16 border border-gray-300 rounded"
-            />
-            <FaSearch className="absolute left-10 top-1/2 transform -translate-y-1/2 text-gray-500" />
-          </div>
-          <div
-            className="cursor-pointer p-2 hover:text-red-600"
-            onClick={handleChatClose}
-          >
-            <IoCloseSharp className="font-bold text-3xl" />
-          </div>
-        </div>
-      </div>
-      <div className="flex-grow overflow-y-auto p-4 bg-green-100 ">
-        {state.searchQuery?.length > 0 ? (
-          filteredChats.length === 0 ? (
-            <div className="mt-2 text-gray-600 text-center">
-              No messages found matching the search query.
+    <>
+      {selectedChat.id !== 0 && (
+        <div className="flex flex-col w-full h-[90vh] flex-wrap">
+          <div className="flex justify-between items-center bg-green-200 p-2">
+            <div className="flex gap-2 items-center">
+              <Avatar imageURL={imageURL} sender={selectedChat.sender} />
+              <h2 className="text-2xl font-bold sticky">
+                {selectedChat.sender}
+              </h2>
             </div>
-          ) : (
-            filteredChats.map((message) => (
-              <div
-                key={message.id}
-                className={`mt-3 p-3 rounded-lg shadow-md max-w-[75%] ${
-                  message.sender === "me" ? "bg-green-100 self-end" : "bg-white"
-                }`}
-              >
-                <p className="text-lg">{message.text}</p>
-                {message.sim && (
-                  <p className="text-md text-black mt-1">
-                    <strong>SIM:</strong> {message.sim}
-                  </p>
-                )}
-                {message.sentStamp && (
-                  <p className="text-md  mt-1 text-right">
-                    {message.sentStamp}
-                  </p>
-                )}
+            <div className="flex gap-4 items-center">
+              <div className="relative flex items-center">
+                <input
+                  type="text"
+                  placeholder="Search messages..."
+                  value={state.searchQuery}
+                  onChange={handleSearchChange}
+                  className="w-full py-2 pl-16 border border-gray-300 rounded"
+                />
+                <FaSearch className="absolute left-10 top-1/2 transform -translate-y-1/2 text-gray-500" />
+                {/* input type  radio in which true radio means no mute else mute */}
+                <input
+                  type="radio"
+                  name="mute"
+                  value={user.mute}
+                  checked={user.mute === false}
+                  onChange={handleUserMutePreference}
+                />
               </div>
-            ))
-          )
-        ) : (
-          state.messages.map((message) => (
-            <div
-              key={message.id}
-              className={`mt-2 p-3 rounded-lg shadow-md max-w-[75%] ${
-                message.sender === "me" ? "bg-green-100 self-end" : "bg-white"
-              }`}
-            >
-              <p className="text-lg">{message.text}</p>
-              {message.sim && (
-                <p className="text-md text-black mt-1">
-                  <strong>SIM:</strong> {message.sim}
-                </p>
-              )}
-              {message.sentStamp && (
-                <p className="text-md  mt-1 text-right">{message.sentStamp}</p>
-              )}
+              <div
+                className="cursor-pointer p-2 hover:text-red-600"
+                onClick={handleChatClose}
+              >
+                <IoCloseSharp className="font-bold text-3xl" />
+              </div>
             </div>
-          ))
-        )}
-      </div>
-    </div>
+          </div>
+          <div className="flex-grow overflow-y-auto p-4 bg-green-100 ">
+            {state.searchQuery?.length > 0 ? (
+              filteredChats.length === 0 ? (
+                <div className="mt-2 text-gray-600 text-center">
+                  No messages found matching the search query.
+                </div>
+              ) : (
+                filteredChats.map((message) => (
+                  <div
+                    key={message.id}
+                    className={`mt-3 p-3 rounded-lg shadow-md max-w-[75%] ${
+                      message.sender === "me"
+                        ? "bg-green-100 self-end"
+                        : "bg-white"
+                    }`}
+                  >
+                    <p className="text-lg">{message.text}</p>
+                    {message.sim && (
+                      <p className="text-md text-black mt-1">
+                        <strong>SIM:</strong> {message.sim}
+                      </p>
+                    )}
+                    {message.sentStamp && (
+                      <p className="text-md  mt-1 text-right">
+                        {message.sentStamp}
+                      </p>
+                    )}
+                  </div>
+                ))
+              )
+            ) : (
+              state.messages.map((message) => (
+                <div
+                  key={message.id}
+                  className={`mt-2 p-3 rounded-lg shadow-md max-w-[75%] ${
+                    message.sender === "me"
+                      ? "bg-green-100 self-end"
+                      : "bg-white"
+                  }`}
+                >
+                  <p className="text-lg">{message.text}</p>
+                  {message.sim && (
+                    <p className="text-md text-black mt-1">
+                      <strong>SIM:</strong> {message.sim}
+                    </p>
+                  )}
+                  {message.sentStamp && (
+                    <p className="text-md  mt-1 text-right">
+                      {message.sentStamp}
+                    </p>
+                  )}
+                </div>
+              ))
+            )}
+          </div>
+        </div>
+      )}
+    </>
   );
-};
-
-ChatDetails.propTypes = {
-  chat: PropTypes.shape({
-    sender: PropTypes.string.isRequired,
-    text: PropTypes.string,
-    sim: PropTypes.string,
-    sentStamp: PropTypes.string,
-  }),
-  onCloseChat: PropTypes.func.isRequired,
-  imageURL: PropTypes.string,
 };
 
 export default ChatDetails;

@@ -22,10 +22,10 @@ export const HandleAccess = () => {
       console.error("Failed to refresh token, user cannot access");
       dispatch(setHaveAccess(false));
       // localStorage.setItem("haveAccess", false);
-      return null; // Return null to signify failure
+      return null;
     }
 
-    return tokens.accessToken; // Return the new access token
+    return tokens.accessToken;
   };
 
   const access = async (token, decodedToken) => {
@@ -67,21 +67,20 @@ export const HandleAccess = () => {
     }
   };
 
-  // Check if token is valid or expired
   const handleToken = async () => {
     if (!token || isTokenExpired(token)) {
       const newToken = await refreshAccessToken();
       if (newToken) {
-        dispatch(setToken(newToken)); // Use the new token
+        dispatch(setToken(newToken));
         dispatch(setRefreshToken(refresh_token));
         // localStorage.setItem("token", newToken);
         // localStorage.setItem("refresh_token", refresh_token);
       } else {
-        return; // Exit if token refresh fails
+        return;
       }
     }
 
-    const decodedToken = jwtDecode(token); // Decode the token here
+    const decodedToken = jwtDecode(token);
     dispatch(
       setUser({
         name: decodedToken.preferred_username,
@@ -102,16 +101,14 @@ export const HandleAccess = () => {
       )
     );
 
-    // Call access with the valid token and decodedToken
     await access(token, decodedToken);
   };
 
-  // Call the handleToken function when the component mounts
   useEffect(() => {
     if (token) {
       handleToken();
     }
-  }, [token]); // Add token as a dependency but ensure it does not cause an infinite loop
+  }, [token]);
 
-  return null; // This component does not render anything
+  return null;
 };
