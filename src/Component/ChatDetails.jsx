@@ -14,6 +14,7 @@ const ChatDetails = () => {
     messages: [],
     error: null,
     searchQuery: "",
+    copiedOTPMessageId: null,
   });
 
   const dispatch = useDispatch();
@@ -34,12 +35,12 @@ const ChatDetails = () => {
 
   useEffect(() => {
     if (!selectedChat) {
-      setState({ messages: [], error: null });
+      setState({ messages: [], error: null, copiedOTPMessageId: null });
       return;
     }
 
     const fetchMessages = async () => {
-      setState({ messages: [], error: null });
+      setState({ messages: [], error: null, copiedOTPMessageId: null });
       try {
         const response = await fetch(
           `${import.meta.env.VITE_BACKEND_API}/messages?sender=${
@@ -49,7 +50,7 @@ const ChatDetails = () => {
         const data = await response.json();
 
         if (data.status === "success" && Array.isArray(data.messages)) {
-          setState({ messages: data.messages, error: null });
+          setState({ messages: data.messages, error: null, copiedOTPMessageId: null });
         } else {
           throw new Error("Unexpected data format");
         }
@@ -57,6 +58,7 @@ const ChatDetails = () => {
         setState({
           messages: [],
           error: "Failed to fetch messages",
+          copiedOTPMessageId: null,
         });
         console.error("Failed to fetch messages:", error);
       }
@@ -70,6 +72,7 @@ const ChatDetails = () => {
           setState((prevState) => ({
             messages: [...prevState.messages, newMessage],
             error: null,
+            copiedOTPMessageId: null,
           }));
         }
       };
@@ -103,6 +106,7 @@ const ChatDetails = () => {
     setState((prev) => ({
       ...prev,
       messages: [],
+      copiedOTPMessageId: null,
     }));
     handleOnCloseChat();
   };
@@ -112,12 +116,46 @@ const ChatDetails = () => {
     console.log("Mute status changed:", selectedChat.mute);
   };
 
+  const copyToClipboard = (text, messageId) => {
+    navigator.clipboard.writeText(text).then(
+      () => {
+        console.log("Copied to clipboard:", text);
+        setState((prevState) => ({
+          ...prevState,
+          copiedOTPMessageId: messageId,
+        }));
+        setTimeout(() => {
+          setState((prevState) => ({
+            ...prevState,
+            copiedOTPMessageId: null,
+          }));
+        }, 2000); // Clear after 2 sec
+      },
+      (err) => {
+        console.error("Failed to copy text to clipboard:", err);
+      }
+    );
+  };
+
+  const extractOTP = (text) => {
+    const otpMatch = text.match(/\b\d{4,8}\b/);
+    if (otpMatch) {
+      // Check if the message contains typical OTP keywords
+      const otpKeywords = ["otp", "one-time password", "verification code", "the verification code"];
+      const lowerText = text.toLowerCase();
+      if (otpKeywords.some((keyword) => lowerText.includes(keyword))) {
+        return otpMatch[0];
+      }
+    }
+    return null;
+  };
+
   const { error } = state;
 
   if (selectedChat.id === 0) {
     return (
       <div className="p-4 flex flex-col w-full h-[90vh] md:w-2/3 font-bold items-center">
-        Select a chat to view details !
+        Select a chat to view details!
       </div>
     );
   }
@@ -147,7 +185,6 @@ const ChatDetails = () => {
                   className="w-full py-2 pl-16 border border-gray-300 rounded"
                 />
                 <FaSearch className="absolute left-10 top-1/2 transform -translate-y-1/2 text-gray-500" />
-                {/* input type  radio in which true radio means no mute else mute */}
                 <input
                   type="radio"
                   name="mute"
@@ -171,16 +208,71 @@ const ChatDetails = () => {
                   No messages found matching the search query.
                 </div>
               ) : (
-                filteredChats.map((message) => (
+                filteredChats.map((message) => {
+                  const otp = extractOTP(message.text);
+                  return (
+                    <div
+                      key={message.id}
+                      className={`mt-3 p-3 rounded-lg shadow-md max-w-[75%] ${
+                        message.sender === "me"
+                          ? "bg-green-100 self-end"
+                          : "bg-white"
+                      }`}
+                    >
+                      <p className="text-lg">{message.text}</p>
+                      {otp && (
+                        <>
+                          <button
+                            onClick={() => copyToClipboard(otp, message.id)}
+                            className="mt-2 bg-blue-500 text-white px-2 py-1 rounded"
+                          >
+                            Copy OTP
+                          </button>
+                          {state.copiedOTPMessageId === message.id && (
+                            <span className="ml-2 text-green-600">OTP Copied</span>
+                          )}
+                        </>
+                      )}
+                      {message.sim && (
+                        <p className="text-md text-black mt-1">
+                          <strong>SIM:</strong> {message.sim}
+                        </p>
+                      )}
+                      {message.sentStamp && (
+                        <p className="text-md  mt-1 text-right">
+                          {message.sentStamp}
+                        </p>
+                      )}
+                    </div>
+                  );
+                })
+              )
+            ) : (
+              state.messages.map((message) => {
+                const otp = extractOTP(message.text);
+                return (
                   <div
                     key={message.id}
-                    className={`mt-3 p-3 rounded-lg shadow-md max-w-[75%] ${
+                    className={`mt-2 p-3 rounded-lg shadow-md max-w-[75%] ${
                       message.sender === "me"
                         ? "bg-green-100 self-end"
                         : "bg-white"
                     }`}
                   >
                     <p className="text-lg">{message.text}</p>
+                    {otp && (
+                      <>
+                        <button
+                          onClick={() => copyToClipboard(otp, message.id)}
+                          className="mt-2 bg-blue-500 text-white px-2 py-1 rounded"
+                        >
+                          Copy OTP
+                        </button>
+                        {state.copiedOTPMessageId === message.id && (
+                          <span className="ml-2 text-green-600">OTP Copied</span>
+                        )}
+                      </>
+                    )}
                     {message.sim && (
                       <p className="text-md text-black mt-1">
                         <strong>SIM:</strong> {message.sim}
@@ -192,31 +284,8 @@ const ChatDetails = () => {
                       </p>
                     )}
                   </div>
-                ))
-              )
-            ) : (
-              state.messages.map((message) => (
-                <div
-                  key={message.id}
-                  className={`mt-2 p-3 rounded-lg shadow-md max-w-[75%] ${
-                    message.sender === "me"
-                      ? "bg-green-100 self-end"
-                      : "bg-white"
-                  }`}
-                >
-                  <p className="text-lg">{message.text}</p>
-                  {message.sim && (
-                    <p className="text-md text-black mt-1">
-                      <strong>SIM:</strong> {message.sim}
-                    </p>
-                  )}
-                  {message.sentStamp && (
-                    <p className="text-md  mt-1 text-right">
-                      {message.sentStamp}
-                    </p>
-                  )}
-                </div>
-              ))
+                );
+              })
             )}
           </div>
         </div>

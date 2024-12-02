@@ -21,8 +21,6 @@ const ChatList = ({ onSelectChat }) => {
     onSelectChat(chat, imageURL);
   };
 
-  console.log("SelectedChat in ChatList:", selectedChat);
-
   const filteredChats = chats.filter(
     (chat) =>
       chat.sender.toLowerCase().includes(searchQuery.toLowerCase()) ||
