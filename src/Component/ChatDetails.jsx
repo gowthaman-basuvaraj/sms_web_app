@@ -35,12 +35,22 @@ const ChatDetails = () => {
 
   useEffect(() => {
     if (!selectedChat) {
-      setState({ messages: [], error: null, copiedOTPMessageId: null });
+      setState((prevState) => ({
+        ...prevState,
+        messages: [],
+        error: null,
+        copiedOTPMessageId: null,
+      }));
       return;
     }
 
     const fetchMessages = async () => {
-      setState({ messages: [], error: null, copiedOTPMessageId: null });
+      setState((prevState) => ({
+        ...prevState,
+        messages: [],
+        error: null,
+        copiedOTPMessageId: null,
+      }));
       try {
         const response = await fetch(
           `${import.meta.env.VITE_BACKEND_API}/messages?sender=${
@@ -50,16 +60,22 @@ const ChatDetails = () => {
         const data = await response.json();
 
         if (data.status === "success" && Array.isArray(data.messages)) {
-          setState({ messages: data.messages, error: null, copiedOTPMessageId: null });
+          setState((prevState) => ({
+            ...prevState,
+            messages: data.messages,
+            error: null,
+            copiedOTPMessageId: null,
+          }));
         } else {
           throw new Error("Unexpected data format");
         }
       } catch (error) {
-        setState({
+        setState((prevState) => ({
+          ...prevState,
           messages: [],
           error: "Failed to fetch messages",
           copiedOTPMessageId: null,
-        });
+        }));
         console.error("Failed to fetch messages:", error);
       }
     };
@@ -70,6 +86,7 @@ const ChatDetails = () => {
       const handleNewMessage = (newMessage) => {
         if (newMessage.sender === selectedChat.sender) {
           setState((prevState) => ({
+            ...prevState,
             messages: [...prevState.messages, newMessage],
             error: null,
             copiedOTPMessageId: null,
@@ -103,8 +120,8 @@ const ChatDetails = () => {
   });
 
   const handleChatClose = () => {
-    setState((prev) => ({
-      ...prev,
+    setState((prevState) => ({
+      ...prevState,
       messages: [],
       copiedOTPMessageId: null,
     }));
@@ -167,32 +184,30 @@ const ChatDetails = () => {
   return (
     <>
       {selectedChat.id !== 0 && (
-        <div className="flex flex-col w-full h-[90vh] flex-wrap">
+        <div className="flex flex-col w-full h-[90vh]">
           <div className="flex justify-between items-center bg-green-200 p-2">
-            <div className="flex gap-2 items-center">
+            <div className="flex items-center gap-2">
               <Avatar imageURL={imageURL} sender={selectedChat.sender} />
-              <h2 className="text-2xl font-bold sticky">
-                {selectedChat.sender}
-              </h2>
+              <h2 className="text-2xl font-bold">{selectedChat.sender}</h2>
             </div>
-            <div className="flex gap-4 items-center">
+            <div className="flex items-center gap-4">
               <div className="relative flex items-center">
                 <input
                   type="text"
                   placeholder="Search messages..."
                   value={state.searchQuery}
                   onChange={handleSearchChange}
-                  className="w-full py-2 pl-16 border border-gray-300 rounded"
+                  className="w-full py-2 pl-10 border border-gray-300 rounded"
                 />
-                <FaSearch className="absolute left-10 top-1/2 transform -translate-y-1/2 text-gray-500" />
-                <input
-                  type="radio"
-                  name="mute"
-                  value={user.mute}
-                  checked={user.mute === false}
-                  onChange={handleUserMutePreference}
-                />
+                <FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500" />
               </div>
+              <input
+                type="radio"
+                name="mute"
+                value={user.mute}
+                checked={user.mute === false}
+                onChange={handleUserMutePreference}
+              />
               <div
                 className="cursor-pointer p-2 hover:text-red-600"
                 onClick={handleChatClose}
@@ -201,7 +216,7 @@ const ChatDetails = () => {
               </div>
             </div>
           </div>
-          <div className="flex-grow overflow-y-auto p-4 bg-green-100 ">
+          <div className="flex-grow overflow-y-auto p-4 bg-green-100">
             {state.searchQuery?.length > 0 ? (
               filteredChats.length === 0 ? (
                 <div className="mt-2 text-gray-600 text-center">
@@ -239,7 +254,7 @@ const ChatDetails = () => {
                         </p>
                       )}
                       {message.sentStamp && (
-                        <p className="text-md  mt-1 text-right">
+                        <p className="text-md mt-1 text-right">
                           {message.sentStamp}
                         </p>
                       )}
@@ -279,7 +294,7 @@ const ChatDetails = () => {
                       </p>
                     )}
                     {message.sentStamp && (
-                      <p className="text-md  mt-1 text-right">
+                      <p className="text-md mt-1 text-right">
                         {message.sentStamp}
                       </p>
                     )}
