@@ -5,10 +5,11 @@ import { IoCloseSharp } from "react-icons/io5";
 import Avatar from "../UI/Avatar";
 import { useDispatch, useSelector } from "react-redux";
 import { setImageURL, setSelectedChat } from "../store/Store";
+import Toggle from "../UI/Toggle";
 
 const ChatDetails = () => {
   const { socket } = useSocket();
-  const { selectedChat, imageURL, user } = useSelector((state) => state.auth);
+  const { selectedChat, imageURL } = useSelector((state) => state.auth);
 
   const [state, setState] = useState({
     messages: [],
@@ -17,8 +18,6 @@ const ChatDetails = () => {
   });
 
   const dispatch = useDispatch();
-
-  console.log("mute status:", selectedChat.mute);
 
   const handleOnCloseChat = () => {
     dispatch(
@@ -107,11 +106,6 @@ const ChatDetails = () => {
     handleOnCloseChat();
   };
 
-  const handleUserMutePreference = () => {
-    dispatch(setSelectedChat({ ...selectedChat, mute: !selectedChat.mute }));
-    console.log("Mute status changed:", selectedChat.mute);
-  };
-
   const { error } = state;
 
   if (selectedChat.id === 0) {
@@ -147,15 +141,12 @@ const ChatDetails = () => {
                   className="w-full py-2 pl-16 border border-gray-300 rounded"
                 />
                 <FaSearch className="absolute left-10 top-1/2 transform -translate-y-1/2 text-gray-500" />
-                {/* input type  radio in which true radio means no mute else mute */}
-                <input
-                  type="radio"
-                  name="mute"
-                  value={user.mute}
-                  checked={user.mute === false}
-                  onChange={handleUserMutePreference}
-                />
               </div>
+              {/* input type  radio in which true radio means mute else no mute */}
+              <div className="">
+                <Toggle />
+              </div>
+
               <div
                 className="cursor-pointer p-2 hover:text-red-600"
                 onClick={handleChatClose}

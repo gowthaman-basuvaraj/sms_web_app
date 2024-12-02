@@ -1,4 +1,49 @@
-import { configureStore, createSlice } from "@reduxjs/toolkit";
+import {
+  configureStore,
+  createAsyncThunk,
+  createSlice,
+} from "@reduxjs/toolkit";
+
+const fetchUserPreferences = createAsyncThunk(
+  `/get/user/preferences`,
+  async ({ userName, sender }) => {
+    console.log("fetching user preferences", userName, sender);
+    const res = await fetch(
+      `${
+        import.meta.env.VITE_BACKEND_API
+      }/user/preferences?userName=${userName}&sender=${sender}`
+    );
+    if (!res.ok) {
+      throw new Error("Failed to fetch user preferences");
+    }
+    const data = await res.json();
+    console.log("store data", data);
+    return data;
+  }
+);
+
+const updateMutePreference = createAsyncThunk(
+  "/post/user/preferences",
+  async ({ userName, sender, mute }) => {
+    const res = fetch(`${import.meta.env.VITE_BACKEND_API}/user/preference`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        userName: userName,
+        senderName: sender,
+        mutePreferences: mute,
+      }),
+    });
+    if (!res.ok) {
+      throw new Error("Failed to set user preferences");
+    }
+    const data = await res.json();
+    fetchUserPreferences({ userName, sender });
+    return data.mutePreferences;
+  }
+);
 
 const authSlice = createSlice({
   name: "auth",
@@ -7,6 +52,7 @@ const authSlice = createSlice({
     refresh_token: "",
     haveAccess: false,
     user: {
+      id: 0,
       name: "",
       role: "",
     },
@@ -15,14 +61,7 @@ const authSlice = createSlice({
       id: 0,
       sender: "",
       sim: "",
-      mute: async ()=> {
-        const res = await fetch(`${import.meta.env.VITE_BACKEND_API}/messages`, {
-          method: "GET",
-        });
-        const data = await res.json();
-        console.log("Received messages:", data);
-        return data.mute;
-      },
+      mute: true,
     },
     keyclock: {
       token: "",
@@ -80,6 +119,20 @@ const authSlice = createSlice({
       };
     },
   },
+  extraReducers: (builder) => {
+    builder
+      .addCase(fetchUserPreferences.pending, (action) => {
+        console.log("Fetching user preferences...", action.payload);
+      })
+      .addCase(fetchUserPreferences.fulfilled, (state, action) => {
+        console.log("User preferences fetched successfully in store", action.payload.preferences);
+        state.selectedChat.mute = action.payload.preferences[0].mutePreferences === 1 ? true : false;
+        console.log("Updating selected chat mute status in store", state.selectedChat.mute);
+      })
+      .addCase(updateMutePreference.fulfilled, (state, action) => {
+        state.selectedChat.mute = action.payload;
+      });
+  },
 });
 
 export const {
@@ -98,5 +151,5 @@ const store = configureStore({
     auth: authSlice.reducer,
   },
 });
-
+export { fetchUserPreferences, updateMutePreference };
 export default store;

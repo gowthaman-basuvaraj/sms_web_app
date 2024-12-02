@@ -65,37 +65,36 @@ export const SocketProvider = ({ children, handleSelectChat }) => {
       });
 
       // Play notification sound
-      if (!selectedChat.mute) {
+      if (selectedChat.mute) {
         const audio = new Audio("/sound.mp3");
         audio.play();
-      }
+        // Show desktop notification
+        if (Notification.permission === "granted") {
+          const notification = new Notification("New message received", {
+            body: `${newMessage.sender}: ${newMessage.text}`,
+          });
 
-      // Show desktop notification
-      if (Notification.permission === "granted") {
-        const notification = new Notification("New message received", {
-          body: `${newMessage.sender}: ${newMessage.text}`,
-        });
-
-        const imageURL = HandleAvatar(newMessage.sender);
-
-        notification.onclick = () => {
-          handleSelectChat(newMessage, imageURL);
-          window.focus();
-        };
-      } else if (Notification.permission !== "denied") {
-        Notification.requestPermission().then((permission) => {
           const imageURL = HandleAvatar(newMessage.sender);
-          if (permission === "granted") {
-            const notification = new Notification("New message received", {
-              body: `${newMessage.sender}: ${newMessage.text}`,
-            });
 
-            notification.onclick = () => {
-              handleSelectChat(newMessage, imageURL);
-              window.focus();
-            };
-          }
-        });
+          notification.onclick = () => {
+            handleSelectChat(newMessage, imageURL);
+            window.focus();
+          };
+        } else if (Notification.permission !== "denied") {
+          Notification.requestPermission().then((permission) => {
+            const imageURL = HandleAvatar(newMessage.sender);
+            if (permission === "granted") {
+              const notification = new Notification("New message received", {
+                body: `${newMessage.sender}: ${newMessage.text}`,
+              });
+
+              notification.onclick = () => {
+                handleSelectChat(newMessage, imageURL);
+                window.focus();
+              };
+            }
+          });
+        }
       }
     });
 

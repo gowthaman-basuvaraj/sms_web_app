@@ -17,11 +17,11 @@ const ChatList = ({ onSelectChat }) => {
   };
 
   const handleSelectChat = (chat, imageURL) => {
+    console.log("SelectedChat in ChatList:", selectedChat);
     markAsRead(chat.id);
     onSelectChat(chat, imageURL);
   };
 
-  console.log("SelectedChat in ChatList:", selectedChat);
 
   const filteredChats = chats.filter(
     (chat) =>

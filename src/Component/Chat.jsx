@@ -1,19 +1,27 @@
 import { useState } from "react";
 import ChatList from "./ChatList";
 import ChatDetails from "./ChatDetails";
-import { useDispatch } from "react-redux";
-import { setImageURL, setSelectedChat } from "../store/Store";
+import { useDispatch, useSelector } from "react-redux";
+import {
+  setImageURL,
+  setSelectedChat,
+  fetchUserPreferences,
+} from "../store/Store";
 
 export default function Chat() {
   const [state, setState] = useState({
     chatListWidth: 450,
   });
   const dispatch = useDispatch();
+  const { user } = useSelector((state) => state.auth);
 
   const handleSelectChat = (chat, imageURL) => {
     dispatch(setSelectedChat(chat));
     dispatch(setImageURL(imageURL));
-    console.log("Selected chat in chatlist:", chat);
+    const userName = user.name;
+    const sender = chat.sender;
+    console.log("Selected chat in App:", sender, "user is: ", userName);
+    dispatch(fetchUserPreferences({ userName, sender }));
   };
 
   const handleResize = (e) => {
