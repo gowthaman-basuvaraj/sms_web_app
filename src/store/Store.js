@@ -15,7 +15,14 @@ const authSlice = createSlice({
       id: 0,
       sender: "",
       sim: "",
-      mute: true,
+      mute: async ()=> {
+        const res = await fetch(`${import.meta.env.VITE_BACKEND_API}/messages`, {
+          method: "GET",
+        });
+        const data = await res.json();
+        console.log("Received messages:", data);
+        return data.mute;
+      },
     },
     keyclock: {
       token: "",
