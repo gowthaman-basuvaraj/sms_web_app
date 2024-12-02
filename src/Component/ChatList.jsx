@@ -79,7 +79,7 @@ const ChatList = ({ onSelectChat }) => {
                 <strong className="truncate w-1/4">{chat.sender}</strong>
                 <span className="truncate w-4/5 ml-2">{chat.text}</span>
                 {unreadCount > 0 && (
-                  <span className="ml-2 bg-red-500 text-white rounded-full px-2 py-1 text-xs">
+                  <span className="ml-2 bg-green-500 text-white rounded-full px-2 py-1 text-xs">
                     {unreadCount}
                   </span>
                 )}

@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { FaSearch } from "react-icons/fa";
+import { FaSearch, FaClipboard, FaClipboardCheck } from "react-icons/fa";
 import { useSocket } from "./SocketProvider";
 import { IoCloseSharp } from "react-icons/io5";
 import Avatar from "../UI/Avatar";
@@ -235,23 +235,28 @@ const ChatDetails = () => {
                       }`}
                     >
                       <p className="text-lg">{message.text}</p>
-                      {otp && (
-                        <>
-                          <button
-                            onClick={() => copyToClipboard(otp, message.id)}
-                            className="mt-2 bg-blue-500 text-white px-2 py-1 rounded"
-                          >
-                            Copy OTP
-                          </button>
-                          {state.copiedOTPMessageId === message.id && (
-                            <span className="ml-2 text-green-600">OTP Copied</span>
-                          )}
-                        </>
-                      )}
                       {message.sim && (
                         <p className="text-md text-black mt-1">
                           <strong>SIM:</strong> {message.sim}
                         </p>
+                      )}
+                      {otp && (
+                        <button
+                          onClick={() => copyToClipboard(otp, message.id)}
+                          className="mt-2 bg-gray-800 text-white px-2 py-1 rounded flex items-center"
+                        >
+                          {state.copiedOTPMessageId === message.id ? (
+                            <>
+                              <FaClipboardCheck className="mr-2" />
+                              OTP Copied
+                            </>
+                          ) : (
+                            <>
+                              <FaClipboard className="mr-2" />
+                              Copy OTP
+                            </>
+                          )}
+                        </button>
                       )}
                       {message.sentStamp && (
                         <p className="text-md mt-1 text-right">
@@ -275,23 +280,28 @@ const ChatDetails = () => {
                     }`}
                   >
                     <p className="text-lg">{message.text}</p>
-                    {otp && (
-                      <>
-                        <button
-                          onClick={() => copyToClipboard(otp, message.id)}
-                          className="mt-2 bg-blue-500 text-white px-2 py-1 rounded"
-                        >
-                          Copy OTP
-                        </button>
-                        {state.copiedOTPMessageId === message.id && (
-                          <span className="ml-2 text-green-600">OTP Copied</span>
-                        )}
-                      </>
-                    )}
                     {message.sim && (
                       <p className="text-md text-black mt-1">
                         <strong>SIM:</strong> {message.sim}
                       </p>
+                    )}
+                    {otp && (
+                      <button
+                        onClick={() => copyToClipboard(otp, message.id)}
+                        className="mt-2 bg-gray-800 text-white px-2 py-1 rounded flex items-center"
+                      >
+                        {state.copiedOTPMessageId === message.id ? (
+                          <>
+                            <FaClipboardCheck className="mr-2" />
+                            OTP Copied
+                          </>
+                        ) : (
+                          <>
+                            <FaClipboard className="mr-2" />
+                            Copy OTP
+                          </>
+                        )}
+                      </button>
                     )}
                     {message.sentStamp && (
                       <p className="text-md mt-1 text-right">
