@@ -13,7 +13,7 @@ export const SocketProvider = ({ children, handleSelectChat }) => {
     chats: [],
     loading: true,
     error: null,
-    readChats: [],
+    readChats: JSON.parse(localStorage.getItem("readChats")) || [],
   });
 
   const { selectedChat } = useSelector((state) => state.auth);
@@ -65,7 +65,7 @@ export const SocketProvider = ({ children, handleSelectChat }) => {
       });
 
       // Play notification sound
-      if(!selectedChat.mute){
+      if (!selectedChat.mute) {
         const audio = new Audio("/sound.mp3");
         audio.play();
       }
@@ -105,10 +105,14 @@ export const SocketProvider = ({ children, handleSelectChat }) => {
   }, [handleSelectChat]);
 
   const markAsRead = (chatId) => {
-    setState((prevState) => ({
-      ...prevState,
-      readChats: [...prevState.readChats, chatId],
-    }));
+    setState((prevState) => {
+      const updatedReadChats = [...prevState.readChats, chatId];
+      localStorage.setItem("readChats", JSON.stringify(updatedReadChats));
+      return {
+        ...prevState,
+        readChats: updatedReadChats,
+      };
+    });
   };
 
   return (
