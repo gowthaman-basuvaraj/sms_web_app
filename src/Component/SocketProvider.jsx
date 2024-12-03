@@ -14,6 +14,7 @@ export const SocketProvider = ({ children, handleSelectChat }) => {
     loading: true,
     error: null,
     readChats: JSON.parse(localStorage.getItem("readChats")) || [],
+    unreadCount: {},
   });
 
   const { selectedChat } = useSelector((state) => state.auth);
@@ -56,16 +57,23 @@ export const SocketProvider = ({ children, handleSelectChat }) => {
         const updatedChats = prevState.chats.filter(
           (chat) => chat.sender !== newMessage.sender
         );
+        const updatedUnreadCount = { ...prevState.unreadCount };
+        if (!updatedUnreadCount[newMessage.sender]) {
+          updatedUnreadCount[newMessage.sender] = 0;
+        }
+        updatedUnreadCount[newMessage.sender] += 1;
+
         return {
           ...prevState,
           chats: [newMessage, ...updatedChats],
           loading: false,
           error: null,
+          unreadCount: updatedUnreadCount,
         };
       });
 
       // Play notification sound
-      if (selectedChat.mute) {
+      
         const audio = new Audio("/sound.mp3");
         audio.play();
         // Show desktop notification
@@ -95,7 +103,7 @@ export const SocketProvider = ({ children, handleSelectChat }) => {
             }
           });
         }
-      }
+      
     });
 
     return () => {
@@ -107,9 +115,17 @@ export const SocketProvider = ({ children, handleSelectChat }) => {
     setState((prevState) => {
       const updatedReadChats = [...prevState.readChats, chatId];
       localStorage.setItem("readChats", JSON.stringify(updatedReadChats));
+
+      const chat = prevState.chats.find((c) => c.id === chatId);
+      const updatedUnreadCount = { ...prevState.unreadCount };
+      
+      if (chat) {
+        updatedUnreadCount[chat.sender] = 0;
+      }
       return {
         ...prevState,
         readChats: updatedReadChats,
+        unreadCount: updatedUnreadCount,
       };
     });
   };
