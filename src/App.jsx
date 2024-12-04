@@ -30,7 +30,7 @@ const App = () => {
                 <Route
                   path="*"
                   element={
-                    <div className="flex justify-center items-center h-screen">
+                    <div className="flex justify-center items-center h-screen bg-gray-800 text-white w-full">
                       <h1>You do not have access to read the SMS</h1>
                     </div>
                   }
