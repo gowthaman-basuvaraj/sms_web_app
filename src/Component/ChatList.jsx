@@ -38,24 +38,24 @@ const ChatList = ({ onSelectChat }) => {
   }
 
   if (error) {
-    return <div className="p-4">{error}</div>;
+    return <div className="p-4 text-white bg-gray-900">{error}</div>;
   }
 
   return (
-    <div className="w-full border-r h-[90vh] border-gray-300 overflow-y-auto flex flex-col bg-white">
-      <div className="relative p-4 flex items-center bg-gray-100">
+    <div className="w-full border-r h-[90vh] border-gray-700 overflow-y-auto flex flex-col bg-gray-900 text-white">
+      <div className="relative p-4 flex items-center bg-gray-800">
         <input
           type="text"
           placeholder="Search chats..."
           value={searchQuery}
           onChange={handleSearchChange}
-          className="w-full py-2 pl-10 border border-gray-300 rounded"
+          className="w-full py-2 pl-10 border border-gray-600 rounded bg-gray-700 text-white"
         />
-        <FaSearch className="absolute left-10 top-1/2 transform -translate-y-1/2 text-gray-500" />
+        <FaSearch className="absolute left-10 top-1/2 transform -translate-y-1/2 text-gray-400" />
       </div>
       <div className="flex-grow overflow-y-auto">
         {filteredChats.length === 0 ? (
-          <div className="p-4">No chats available</div>
+          <div className="p-4 text-gray-400">No chats available</div>
         ) : (
           filteredChats.map((chat) => (
             <div
@@ -64,8 +64,8 @@ const ChatList = ({ onSelectChat }) => {
                 handleSelectChat(chat, HandleAvatar(chat.sender))
               }
               className={`p-4 flex items-center cursor-pointer ${
-                chat.id === selectedChat.id ? "bg-green-200 rounded-md" : ""
-              } hover:bg-green-100`}
+                chat.id === selectedChat.id ? "bg-gray-700 rounded-md" : ""
+              } hover:bg-gray-800`}
             >
               <Avatar
                 imageURL={HandleAvatar(chat.sender)}

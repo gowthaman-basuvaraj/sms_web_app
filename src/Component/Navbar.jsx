@@ -27,7 +27,7 @@ const Navbar = () => {
   };
 
   return (
-    <nav className="bg-green-600 text-white p-3">
+    <nav className="bg-gray-950 text-white p-3">
       <div className="flex justify-between items-center">
         <div className="flex items-center space-x-4">
           <span className="text-xl font-bold">SMS Web App</span>
@@ -40,12 +40,12 @@ const Navbar = () => {
                 <span className="text-white">{user?.name}</span>
               </div>
             </SelectTrigger>
-            <SelectContent className="mt-4 bg-white">
+            <SelectContent className="mt-4 bg-gray-700 text-white">
               <div className="px-3 cursor-default">
                 <b>Role:</b> {user?.role}
               </div>
               <button
-                className="w-full text-left py-2 px-3 text-black hover:bg-green-100 rounded-md font-bold"
+                className="w-full text-left py-2 px-3 text-white hover:bg-gray-600 rounded-md font-bold"
                 onClick={handleLogout}
               >
                 Logout

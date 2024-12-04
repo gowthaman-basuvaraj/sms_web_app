@@ -266,7 +266,7 @@ const ChatDetails = () => {
                     className={`mt-2 p-3 rounded-lg shadow-md max-w-[75%] ${
                       message.sender === "me"
                         ? "bg-gray-700 self-end"
-                        : "bg-gray-600"
+                        : "bg-gray-900"
                     }`}
                   >
                     <p className="text-lg">{message.text}</p>
@@ -278,7 +278,7 @@ const ChatDetails = () => {
                     {otp && (
                       <button
                         onClick={() => copyToClipboard(otp, message.id)}
-                        className="mt-2 bg-gray-800 text-white px-2 py-1 rounded flex items-center"
+                        className="mt-2 bg-gray-700 text-white px-2 py-1 rounded flex items-center"
                       >
                         {state.copiedOTPMessageId === message.id ? (
                           <>
