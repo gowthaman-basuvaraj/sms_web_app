@@ -165,21 +165,21 @@ const ChatDetails = () => {
 
   if (selectedChat.id === 0) {
     return (
-      <div className="p-4 flex flex-col w-full h-[90vh] md:w-2/3 font-bold items-center">
+      <div className="p-4 flex flex-col w-full h-[90vh] font-bold items-center text-white bg-gray-900">
         Select a chat to view details!
       </div>
     );
   }
 
   if (error) {
-    return <div className="p-4">{error}</div>;
+    return <div className="p-4 text-white bg-gray-900">{error}</div>;
   }
 
   return (
     <>
       {selectedChat.id !== 0 && (
-        <div className="flex flex-col w-full h-[90vh]">
-          <div className="flex justify-between items-center bg-green-200 p-2">
+        <div className="flex flex-col w-full h-[90vh] bg-gray-900 text-white">
+          <div className="flex justify-between items-center bg-gray-800 p-2">
             <div className="flex items-center gap-2">
               <Avatar imageURL={imageURL} sender={selectedChat.sender} />
               <h2 className="text-2xl font-bold">{selectedChat.sender}</h2>
@@ -191,15 +191,13 @@ const ChatDetails = () => {
                   placeholder="Search messages..."
                   value={state.searchQuery}
                   onChange={handleSearchChange}
-                  className="w-full py-2 pl-10 border border-gray-300 rounded"
+                  className="w-full py-2 pl-10 border border-gray-600 rounded bg-gray-700 text-white"
                 />
-                <FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500" />
+                <FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
               </div>
-              {/* input type  radio in which true radio means mute else no mute */}
               <div className="">
                 <Toggle />
               </div>
-
               <div
                 className="cursor-pointer p-2 hover:text-red-600"
                 onClick={handleChatClose}
@@ -208,10 +206,10 @@ const ChatDetails = () => {
               </div>
             </div>
           </div>
-          <div className="flex-grow overflow-y-auto p-4 bg-green-100">
+          <div className="flex-grow overflow-y-auto p-4 bg-gray-800">
             {state.searchQuery?.length > 0 ? (
               filteredChats.length === 0 ? (
-                <div className="mt-2 text-gray-600 text-center">
+                <div className="mt-2 text-gray-400 text-center">
                   No messages found matching the search query.
                 </div>
               ) : (
@@ -222,13 +220,13 @@ const ChatDetails = () => {
                       key={message.id}
                       className={`mt-3 p-3 rounded-lg shadow-md max-w-[75%] ${
                         message.sender === "me"
-                          ? "bg-green-100 self-end"
-                          : "bg-white"
+                          ? "bg-gray-700 self-end"
+                          : "bg-gray-600"
                       }`}
                     >
                       <p className="text-lg">{message.text}</p>
                       {message.sim && (
-                        <p className="text-md text-black mt-1">
+                        <p className="text-md text-gray-300 mt-1">
                           <strong>SIM:</strong> {message.sim}
                         </p>
                       )}
@@ -251,7 +249,7 @@ const ChatDetails = () => {
                         </button>
                       )}
                       {message.sentStamp && (
-                        <p className="text-md mt-1 text-right">
+                        <p className="text-md mt-1 text-right text-gray-400">
                           {message.sentStamp}
                         </p>
                       )}
@@ -267,13 +265,13 @@ const ChatDetails = () => {
                     key={message.id}
                     className={`mt-2 p-3 rounded-lg shadow-md max-w-[75%] ${
                       message.sender === "me"
-                        ? "bg-green-100 self-end"
-                        : "bg-white"
+                        ? "bg-gray-700 self-end"
+                        : "bg-gray-600"
                     }`}
                   >
                     <p className="text-lg">{message.text}</p>
                     {message.sim && (
-                      <p className="text-md text-black mt-1">
+                      <p className="text-md text-gray-300 mt-1">
                         <strong>SIM:</strong> {message.sim}
                       </p>
                     )}
@@ -296,7 +294,7 @@ const ChatDetails = () => {
                       </button>
                     )}
                     {message.sentStamp && (
-                      <p className="text-md mt-1 text-right">
+                      <p className="text-md mt-1 text-right text-gray-400">
                         {message.sentStamp}
                       </p>
                     )}
