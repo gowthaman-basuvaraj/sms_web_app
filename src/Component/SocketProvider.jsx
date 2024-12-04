@@ -13,7 +13,6 @@ export const SocketProvider = ({ children, handleSelectChat }) => {
     chats: [],
     loading: true,
     error: null,
-    readChats: JSON.parse(localStorage.getItem("readChats")) || [],
     unreadCount: {},
   });
 
@@ -22,17 +21,23 @@ export const SocketProvider = ({ children, handleSelectChat }) => {
   useEffect(() => {
     const fetchChats = async () => {
       try {
-        const response = await fetch(
-          `${import.meta.env.VITE_BACKEND_API}/messages/recent`
-        );
+        const response = await fetch(`${import.meta.env.VITE_BACKEND_API}/messages/recent`);
         const data = await response.json();
 
         if (data.status === "success" && Array.isArray(data.messages)) {
+          const unreadCount = data.messages.reduce((acc, message) => {
+            if (!message.isRead) {
+              acc[message.sender] = (acc[message.sender] || 0) + 1;
+            }
+            return acc;
+          }, {});
+
           setState((prevState) => ({
             ...prevState,
             chats: data.messages,
             loading: false,
             error: null,
+            unreadCount,
           }));
         } else {
           throw new Error("Unexpected data format");
@@ -54,9 +59,7 @@ export const SocketProvider = ({ children, handleSelectChat }) => {
 
     socket.on("newMessage", (newMessage) => {
       setState((prevState) => {
-        const updatedChats = prevState.chats.filter(
-          (chat) => chat.sender !== newMessage.sender
-        );
+        const updatedChats = prevState.chats.filter(chat => chat.sender !== newMessage.sender);
         const updatedUnreadCount = { ...prevState.unreadCount };
         if (!updatedUnreadCount[newMessage.sender]) {
           updatedUnreadCount[newMessage.sender] = 0;
@@ -73,37 +76,36 @@ export const SocketProvider = ({ children, handleSelectChat }) => {
       });
 
       // Play notification sound
-      
-        const audio = new Audio("/sound.mp3");
-        audio.play();
-        // Show desktop notification
-        if (Notification.permission === "granted") {
-          const notification = new Notification("New message received", {
-            body: `${newMessage.sender}: ${newMessage.text}`,
-          });
+      const audio = new Audio("/sound.mp3");
+      audio.play();
 
+      // Show desktop notification
+      if (Notification.permission === "granted") {
+        const notification = new Notification("New message received", {
+          body: `${newMessage.sender}: ${newMessage.text}`,
+        });
+
+        const imageURL = HandleAvatar(newMessage.sender);
+
+        notification.onclick = () => {
+          handleSelectChat(newMessage, imageURL);
+          window.focus();
+        };
+      } else if (Notification.permission !== "denied") {
+        Notification.requestPermission().then((permission) => {
           const imageURL = HandleAvatar(newMessage.sender);
+          if (permission === "granted") {
+            const notification = new Notification("New message received", {
+              body: `${newMessage.sender}: ${newMessage.text}`,
+            });
 
-          notification.onclick = () => {
-            handleSelectChat(newMessage, imageURL);
-            window.focus();
-          };
-        } else if (Notification.permission !== "denied") {
-          Notification.requestPermission().then((permission) => {
-            const imageURL = HandleAvatar(newMessage.sender);
-            if (permission === "granted") {
-              const notification = new Notification("New message received", {
-                body: `${newMessage.sender}: ${newMessage.text}`,
-              });
-
-              notification.onclick = () => {
-                handleSelectChat(newMessage, imageURL);
-                window.focus();
-              };
-            }
-          });
-        }
-      
+            notification.onclick = () => {
+              handleSelectChat(newMessage, imageURL);
+              window.focus();
+            };
+          }
+        });
+      }
     });
 
     return () => {
@@ -111,23 +113,36 @@ export const SocketProvider = ({ children, handleSelectChat }) => {
     };
   }, [handleSelectChat]);
 
-  const markAsRead = (chatId) => {
-    setState((prevState) => {
-      const updatedReadChats = [...prevState.readChats, chatId];
-      localStorage.setItem("readChats", JSON.stringify(updatedReadChats));
+  const markAsRead = async (sender) => {
+    try {
+      await fetch(`${import.meta.env.VITE_BACKEND_API}/messages/mark-as-read`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ sender }),
+      });
 
-      const chat = prevState.chats.find((c) => c.id === chatId);
-      const updatedUnreadCount = { ...prevState.unreadCount };
-      
-      if (chat) {
-        updatedUnreadCount[chat.sender] = 0;
-      }
-      return {
-        ...prevState,
-        readChats: updatedReadChats,
-        unreadCount: updatedUnreadCount,
-      };
-    });
+      setState((prevState) => {
+        const updatedUnreadCount = { ...prevState.unreadCount };
+        updatedUnreadCount[sender] = 0;
+
+        const updatedChats = prevState.chats.map(chat => {
+          if (chat.sender === sender) {
+            return { ...chat, isRead: true };
+          }
+          return chat;
+        });
+
+        return {
+          ...prevState,
+          unreadCount: updatedUnreadCount,
+          chats: updatedChats,
+        };
+      });
+    } catch (error) {
+      console.error("Failed to mark messages as read:", error);
+    }
   };
 
   return (

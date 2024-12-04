@@ -17,9 +17,7 @@ const ChatList = ({ onSelectChat }) => {
   };
 
   const handleSelectChat = (chat, imageURL) => {
-    chats
-      .filter((c) => c.sender === chat.sender)
-      .map((c) => markAsRead(c.id));
+    markAsRead(chat.sender);
     onSelectChat(chat, imageURL);
   };
 
@@ -60,17 +58,12 @@ const ChatList = ({ onSelectChat }) => {
           filteredChats.map((chat) => (
             <div
               key={chat.id}
-              onClick={() =>
-                handleSelectChat(chat, HandleAvatar(chat.sender))
-              }
+              onClick={() => handleSelectChat(chat, HandleAvatar(chat.sender))}
               className={`p-4 flex items-center cursor-pointer ${
                 chat.id === selectedChat.id ? "bg-gray-700 rounded-md" : ""
               } hover:bg-gray-800`}
             >
-              <Avatar
-                imageURL={HandleAvatar(chat.sender)}
-                sender={chat.sender}
-              />
+              <Avatar imageURL={HandleAvatar(chat.sender)} sender={chat.sender} />
               <strong className="truncate w-1/4">{chat.sender}</strong>
               <span className="truncate w-4/5 ml-2">{chat.text}</span>
               {unreadCount[chat.sender] > 0 && (
