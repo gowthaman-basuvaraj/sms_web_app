@@ -3,18 +3,24 @@ import Navbar from "./Component/Navbar";
 import { SocketProvider } from "./Component/SocketProvider";
 import { HandleAccess } from "./store/AccessHandle";
 import { useDispatch, useSelector } from "react-redux";
-import { setImageURL, setSelectedChat } from "./store/Store";
+import { setImageURL, setSelectedChat, fetchAllSenderMutePreferences } from "./store/Store";
 import Chat from "./Component/Chat";
+import { useEffect } from "react";
 
 const App = () => {
   const dispatch = useDispatch();
 
-  const { haveAccess } = useSelector((state) => state.auth);
+  const { haveAccess, user } = useSelector((state) => state.auth);
 
   const handleSelectChat = (chat, imageURL) => {
     dispatch(setSelectedChat(chat));
     dispatch(setImageURL(imageURL));
   };
+
+  useEffect(() => {
+    console.log("User:", user);
+    dispatch(fetchAllSenderMutePreferences(user.name));
+  }, [user]);
 
   return (
     <SocketProvider handleSelectChat={handleSelectChat}>

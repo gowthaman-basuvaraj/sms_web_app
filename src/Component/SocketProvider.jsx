@@ -16,7 +16,7 @@ export const SocketProvider = ({ children, handleSelectChat }) => {
     unreadCount: {},
   });
 
-  const { selectedChat } = useSelector((state) => state.auth);
+  const { selectedChat, mutePreferences, user } = useSelector((state) => state.auth);
 
   useEffect(() => {
     const fetchChats = async () => {
@@ -76,8 +76,13 @@ export const SocketProvider = ({ children, handleSelectChat }) => {
           unreadCount: updatedUnreadCount,
         };
       });
-      
-      const muteState = selectedChat.mute;
+
+      const muteState = mutePreferences[user.name][newMessage.sender];
+      // console.log("mutePreferencesState:", mutePreferencesState);
+      // mute preference object in store: demo2:
+      // Airtel : true
+      // VI : false
+      console.log("mute preference object in store:", mutePreferences[user.name][newMessage.sender]);
 
       if (!muteState) {
         // Play notification sound
@@ -85,32 +90,34 @@ export const SocketProvider = ({ children, handleSelectChat }) => {
         audio.play();
       }
 
-      // Show desktop notification
-      if (Notification.permission === "granted") {
-        const notification = new Notification("New message received", {
-          body: `${newMessage.sender}: ${newMessage.text}`,
-        });
+      if (!muteState) {
+        // Show desktop notification
+        if (Notification.permission === "granted") {
+          const notification = new Notification("New message received", {
+            body: `${newMessage.sender}: ${newMessage.text}`,
+          });
 
-        const imageURL = HandleAvatar(newMessage.sender);
-
-        notification.onclick = () => {
-          handleSelectChat(newMessage, imageURL);
-          window.focus();
-        };
-      } else if (Notification.permission !== "denied") {
-        Notification.requestPermission().then((permission) => {
           const imageURL = HandleAvatar(newMessage.sender);
-          if (permission === "granted") {
-            const notification = new Notification("New message received", {
-              body: `${newMessage.sender}: ${newMessage.text}`,
-            });
 
-            notification.onclick = () => {
-              handleSelectChat(newMessage, imageURL);
-              window.focus();
-            };
-          }
-        });
+          notification.onclick = () => {
+            handleSelectChat(newMessage, imageURL);
+            window.focus();
+          };
+        } else if (Notification.permission !== "denied") {
+          Notification.requestPermission().then((permission) => {
+            const imageURL = HandleAvatar(newMessage.sender);
+            if (permission === "granted") {
+              const notification = new Notification("New message received", {
+                body: `${newMessage.sender}: ${newMessage.text}`,
+              });
+
+              notification.onclick = () => {
+                handleSelectChat(newMessage, imageURL);
+                window.focus();
+              };
+            }
+          });
+        }
       }
     });
 
