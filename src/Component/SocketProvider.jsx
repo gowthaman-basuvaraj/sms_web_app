@@ -26,9 +26,7 @@ export const SocketProvider = ({ children, handleSelectChat }) => {
 
         if (data.status === "success" && Array.isArray(data.messages)) {
           const unreadCount = data.messages.reduce((acc, message) => {
-            if (!message.isRead) {
-              acc[message.sender] = (acc[message.sender] || 0) + 1;
-            }
+            acc[message.sender] = message.unreadCount;
             return acc;
           }, {});
 
@@ -123,23 +121,28 @@ export const SocketProvider = ({ children, handleSelectChat }) => {
         body: JSON.stringify({ sender }),
       });
 
-      setState((prevState) => {
-        const updatedUnreadCount = { ...prevState.unreadCount };
-        updatedUnreadCount[sender] = 0;
+      // Fetch the updated unread count
+      const response = await fetch(`${import.meta.env.VITE_BACKEND_API}/messages/unread-count`);
+      const data = await response.json();
 
-        const updatedChats = prevState.chats.map(chat => {
-          if (chat.sender === sender) {
-            return { ...chat, isRead: true };
-          }
-          return chat;
+      if (data.status === "success") {
+        setState((prevState) => {
+          const updatedChats = prevState.chats.map(chat => {
+            if (chat.sender === sender) {
+              return { ...chat, isRead: true };
+            }
+            return chat;
+          });
+
+          return {
+            ...prevState,
+            unreadCount: data.unreadCount,
+            chats: updatedChats,
+          };
         });
-
-        return {
-          ...prevState,
-          unreadCount: updatedUnreadCount,
-          chats: updatedChats,
-        };
-      });
+      } else {
+        throw new Error("Failed to fetch updated unread count");
+      }
     } catch (error) {
       console.error("Failed to mark messages as read:", error);
     }
