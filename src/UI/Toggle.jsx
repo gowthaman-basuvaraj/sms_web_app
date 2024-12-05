@@ -1,25 +1,29 @@
 import { useSelector, useDispatch } from "react-redux";
 import { updateMutePreference } from "../store/Store.js";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 const Toggle = () => {
   const dispatch = useDispatch();
   const { selectedChat, user } = useSelector((state) => state.auth);
-  const [muteState, setMuteState] = useState(selectedChat.mute);
+  const [muteState, setmuteState] = useState(selectedChat.mute);
+
+  useEffect(() => {
+    setmuteState(selectedChat.mute);
+  }, [selectedChat.mute]);
 
   const handleToggle = () => {
-    setMuteState(!muteState);
     const userName = user.name;
     const sender = selectedChat.sender;
-    const mute = !selectedChat.mute;
-    dispatch(updateMutePreference({ userName, sender, mute }));
+    const newMuteState = !muteState; 
+    setmuteState(newMuteState);
+    dispatch(updateMutePreference({ userName, sender, mute: newMuteState })); 
   };
 
   return (
     <label className="flex items-center relative w-max cursor-pointer select-none">
       <input
         type="checkbox"
-        value={muteState}
+        checked={muteState}
         onChange={handleToggle}
         className={`appearance-none transition-colors cursor-pointer w-20 h-7 rounded-full focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-black focus:ring-blue-500 ${
           muteState ? "bg-green-500" : "bg-red-500"

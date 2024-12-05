@@ -7,7 +7,7 @@ import {
 const fetchUserPreferences = createAsyncThunk(
   `/get/user/preferences`,
   async ({ userName, sender }) => {
-    console.log("fetching user preferences", userName, sender);
+    console.log("fetching user preferences data", userName, sender);
     const res = await fetch(
       `${
         import.meta.env.VITE_BACKEND_API
@@ -121,8 +121,9 @@ const authSlice = createSlice({
   },
   extraReducers: (builder) => {
     builder
-      .addCase(fetchUserPreferences.pending, (action) => {
+      .addCase(fetchUserPreferences.pending, (state, action) => {
         console.log("Fetching user preferences...", action.payload);
+        state.selectedChat.mute = true;
       })
       .addCase(fetchUserPreferences.fulfilled, (state, action) => {
         console.log("User preferences fetched successfully in store", action.payload.preferences);

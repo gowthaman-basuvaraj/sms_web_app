@@ -73,9 +73,11 @@ export const SocketProvider = ({ children, handleSelectChat }) => {
         };
       });
 
-      // Play notification sound
-      const audio = new Audio("/sound.mp3");
-      audio.play();
+      if(!selectedChat.mute){
+        // Play notification sound
+        const audio = new Audio("/sound.mp3");
+        audio.play();
+      }
 
       // Show desktop notification
       if (Notification.permission === "granted") {
