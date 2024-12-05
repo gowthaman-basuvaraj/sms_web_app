@@ -10,7 +10,9 @@ const fetchUserPreferences = createAsyncThunk(
   async ({ userName, sender }) => {
     console.log("Fetching user preferences data", userName, sender);
     const res = await fetch(
-      `${import.meta.env.VITE_BACKEND_API}/user/preferences?userName=${userName}&sender=${sender}`
+      `${
+        import.meta.env.VITE_BACKEND_API
+      }/user/preferences?userName=${userName}&sender=${sender}`
     );
     if (!res.ok) {
       throw new Error("Failed to fetch user preferences");
@@ -27,7 +29,9 @@ const fetchAllSenderMutePreferences = createAsyncThunk(
   async (userName) => {
     console.log("Fetching all sender mute preferences for:", userName);
     const res = await fetch(
-      `${import.meta.env.VITE_BACKEND_API}/user/all/preferences?userName=${userName}`
+      `${
+        import.meta.env.VITE_BACKEND_API
+      }/user/all/preferences?userName=${userName}`
     );
     if (!res.ok) {
       throw new Error("Failed to fetch all sender mute preferences");
@@ -43,17 +47,20 @@ const updateMutePreference = createAsyncThunk(
   "/post/user/preferences",
   async ({ userName, sender, mute }) => {
     console.log("Updating mute preference:", userName, sender, mute);
-    const res = await fetch(`${import.meta.env.VITE_BACKEND_API}/user/preference`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        userName,
-        senderName: sender,
-        mutePreferences: mute,
-      }),
-    });
+    const res = await fetch(
+      `${import.meta.env.VITE_BACKEND_API}/user/preference`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          userName,
+          senderName: sender,
+          mutePreferences: mute,
+        }),
+      }
+    );
     if (!res.ok) {
       throw new Error("Failed to update user preferences");
     }
@@ -138,8 +145,9 @@ const authSlice = createSlice({
     initializeMutePreferences: (state, action) => {
       const { userName, preferences } = action.payload;
       state.mutePreferences[userName] = {};
-      preferences.forEach(pref => {
-        state.mutePreferences[userName][pref.senderName] = pref.mutePreferences === 1;
+      preferences.forEach((pref) => {
+        state.mutePreferences[userName][pref.senderName] =
+          pref.mutePreferences === 1;
       });
     },
     updateMutePreferences: (state, action) => {
@@ -161,19 +169,29 @@ const authSlice = createSlice({
         console.log("Updated selected chat mute status:", muteStatus);
       })
       .addCase(fetchUserPreferences.rejected, (state, action) => {
-        console.error("Failed to fetch user preferences:", action.error.message);
+        console.error(
+          "Failed to fetch user preferences:",
+          action.error.message
+        );
       })
 
       .addCase(fetchAllSenderMutePreferences.fulfilled, (state, action) => {
-        console.log("All sender mute preferences fetched successfully:", action.payload);
+        console.log(
+          "All sender mute preferences fetched successfully:",
+          action.payload
+        );
         const userName = state.user.name;
         state.mutePreferences[userName] = {};
-        action.payload.forEach(pref => {
-          state.mutePreferences[userName][pref.sender_name] = pref.mutePreferences === 1;
+        action.payload.forEach((pref) => {
+          state.mutePreferences[userName][pref.sender_name] =
+            pref.mutePreferences === 1;
         });
       })
       .addCase(fetchAllSenderMutePreferences.rejected, (state, action) => {
-        console.error("Failed to fetch all sender mute preferences:", action.error.message);
+        console.error(
+          "Failed to fetch all sender mute preferences:",
+          action.error.message
+        );
       })
 
       .addCase(updateMutePreference.fulfilled, (state, action) => {
@@ -186,7 +204,10 @@ const authSlice = createSlice({
         console.log("Mute preference updated successfully:", action.payload);
       })
       .addCase(updateMutePreference.rejected, (state, action) => {
-        console.error("Failed to update mute preference:", action.error.message);
+        console.error(
+          "Failed to update mute preference:",
+          action.error.message
+        );
       });
   },
 });
@@ -210,5 +231,9 @@ const store = configureStore({
 });
 
 // Export thunks and the store
-export { fetchUserPreferences, fetchAllSenderMutePreferences, updateMutePreference };
+export {
+  fetchUserPreferences,
+  fetchAllSenderMutePreferences,
+  updateMutePreference,
+};
 export default store;

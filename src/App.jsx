@@ -6,6 +6,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { setImageURL, setSelectedChat, fetchAllSenderMutePreferences } from "./store/Store";
 import Chat from "./Component/Chat";
 import { useEffect, useState } from "react";
+import Loader from "./Component/Loader";
 
 const App = () => {
   const dispatch = useDispatch();
@@ -36,7 +37,7 @@ const App = () => {
   if (loading) {
     return (
       <div className="flex justify-center items-center h-screen bg-gray-800 text-white w-full">
-        <h1>Loading...</h1>
+        <Loader />
       </div>
     );
   }
