@@ -209,8 +209,8 @@ const ChatDetails = () => {
           <div className="flex-grow overflow-y-auto p-4 bg-gray-800">
             {state.searchQuery?.length > 0 ? (
               filteredChats.length === 0 ? (
-                <div className="mt-2 text-gray-400 text-center">
-                  No messages found matching the search query.
+                <div className="mt-2 text-lg font-bold text-center">
+                  Not found
                 </div>
               ) : (
                 filteredChats.map((message) => {
@@ -221,7 +221,7 @@ const ChatDetails = () => {
                       className={`mt-3 p-3 rounded-lg shadow-md max-w-[75%] ${
                         message.sender === "me"
                           ? "bg-gray-700 self-end"
-                          : "bg-gray-600"
+                          : "bg-gray-900"
                       }`}
                     >
                       <p className="text-lg">{message.text}</p>

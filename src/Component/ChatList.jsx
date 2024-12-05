@@ -53,7 +53,7 @@ const ChatList = ({ onSelectChat }) => {
       </div>
       <div className="flex-grow overflow-y-auto">
         {filteredChats.length === 0 ? (
-          <div className="p-4 text-gray-400">No chats available</div>
+          <div className="mt-2 text-lg font-bold text-center p-4">No results in chats</div>
         ) : (
           filteredChats.map((chat) => (
             <div
