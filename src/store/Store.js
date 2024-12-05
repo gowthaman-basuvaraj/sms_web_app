@@ -7,7 +7,7 @@ import {
 const fetchUserPreferences = createAsyncThunk(
   `/get/user/preferences`,
   async ({ userName, sender }) => {
-    console.log("fetching user preferences data", userName, sender);
+    console.log("Fetching user preferences data", userName, sender);
     const res = await fetch(
       `${
         import.meta.env.VITE_BACKEND_API
@@ -17,7 +17,7 @@ const fetchUserPreferences = createAsyncThunk(
       throw new Error("Failed to fetch user preferences");
     }
     const data = await res.json();
-    console.log("store data", data);
+    console.log("Fetched data:", data);
     return data;
   }
 );
@@ -25,23 +25,23 @@ const fetchUserPreferences = createAsyncThunk(
 const updateMutePreference = createAsyncThunk(
   "/post/user/preferences",
   async ({ userName, sender, mute }) => {
-    const res = fetch(`${import.meta.env.VITE_BACKEND_API}/user/preference`, {
+    console.log("Updating mute preference:", userName, sender, mute);
+    const res = await fetch(`${import.meta.env.VITE_BACKEND_API}/user/preference`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        userName: userName,
+        userName,
         senderName: sender,
         mutePreferences: mute,
       }),
     });
     if (!res.ok) {
-      throw new Error("Failed to set user preferences");
+      throw new Error("Failed to update user preferences");
     }
-    const data = await res.json();
-    fetchUserPreferences({ userName, sender });
-    return data.mutePreferences;
+
+    return mute;
   }
 );
 
@@ -121,17 +121,28 @@ const authSlice = createSlice({
   },
   extraReducers: (builder) => {
     builder
-      .addCase(fetchUserPreferences.pending, (state, action) => {
-        console.log("Fetching user preferences...", action.payload);
-        state.selectedChat.mute = true;
+      .addCase(fetchUserPreferences.pending, (state) => {
+        console.log("Fetching user preferences...");
       })
       .addCase(fetchUserPreferences.fulfilled, (state, action) => {
-        console.log("User preferences fetched successfully in store", action.payload.preferences);
-        state.selectedChat.mute = action.payload.preferences[0].mutePreferences === 1 ? true : false;
-        console.log("Updating selected chat mute status in store", state.selectedChat.mute);
+        console.log(
+          "User preferences fetched successfully in store:",
+          action.payload.preferences
+        );
+        const muteStatus =
+          action.payload.preferences[0].mutePreferences === 1 ? true : false;
+        state.selectedChat.mute = muteStatus;
+        console.log("Updated selected chat mute status:", muteStatus);
+      })
+      .addCase(fetchUserPreferences.rejected, (state, action) => {
+        console.error("Failed to fetch user preferences:", action.error.message);
       })
       .addCase(updateMutePreference.fulfilled, (state, action) => {
-        state.selectedChat.mute = action.payload;
+        console.log("Mute preference updated successfully:", action.payload);
+        state.selectedChat.mute = action.payload; 
+      })
+      .addCase(updateMutePreference.rejected, (state, action) => {
+        console.error("Failed to update mute preference:", action.error.message);
       });
   },
 });
@@ -146,11 +157,11 @@ export const {
   setKeyclock,
 } = authSlice.actions;
 
-// Configure the store
 const store = configureStore({
   reducer: {
     auth: authSlice.reducer,
   },
 });
+
 export { fetchUserPreferences, updateMutePreference };
 export default store;

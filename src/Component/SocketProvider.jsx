@@ -21,7 +21,9 @@ export const SocketProvider = ({ children, handleSelectChat }) => {
   useEffect(() => {
     const fetchChats = async () => {
       try {
-        const response = await fetch(`${import.meta.env.VITE_BACKEND_API}/messages/recent`);
+        const response = await fetch(
+          `${import.meta.env.VITE_BACKEND_API}/messages/recent`
+        );
         const data = await response.json();
 
         if (data.status === "success" && Array.isArray(data.messages)) {
@@ -57,7 +59,9 @@ export const SocketProvider = ({ children, handleSelectChat }) => {
 
     socket.on("newMessage", (newMessage) => {
       setState((prevState) => {
-        const updatedChats = prevState.chats.filter(chat => chat.sender !== newMessage.sender);
+        const updatedChats = prevState.chats.filter(
+          (chat) => chat.sender !== newMessage.sender
+        );
         const updatedUnreadCount = { ...prevState.unreadCount };
         if (!updatedUnreadCount[newMessage.sender]) {
           updatedUnreadCount[newMessage.sender] = 0;
@@ -72,8 +76,10 @@ export const SocketProvider = ({ children, handleSelectChat }) => {
           unreadCount: updatedUnreadCount,
         };
       });
+      
+      const muteState = selectedChat.mute;
 
-      if(!selectedChat.mute){
+      if (!muteState) {
         // Play notification sound
         const audio = new Audio("/sound.mp3");
         audio.play();
@@ -111,7 +117,7 @@ export const SocketProvider = ({ children, handleSelectChat }) => {
     return () => {
       socket.disconnect();
     };
-  }, [handleSelectChat]);
+  }, [handleSelectChat, selectedChat]);
 
   const markAsRead = async (sender) => {
     try {
@@ -124,12 +130,14 @@ export const SocketProvider = ({ children, handleSelectChat }) => {
       });
 
       // Fetch the updated unread count
-      const response = await fetch(`${import.meta.env.VITE_BACKEND_API}/messages/unread-count`);
+      const response = await fetch(
+        `${import.meta.env.VITE_BACKEND_API}/messages/unread-count`
+      );
       const data = await response.json();
 
       if (data.status === "success") {
         setState((prevState) => {
-          const updatedChats = prevState.chats.map(chat => {
+          const updatedChats = prevState.chats.map((chat) => {
             if (chat.sender === sender) {
               return { ...chat, isRead: true };
             }
