@@ -6,21 +6,26 @@ import { useSocket } from "./SocketProvider";
 import Avatar, { HandleAvatar } from "../UI/Avatar";
 import { useSelector, useDispatch } from "react-redux";
 import { setSelectedChat, setImageURL } from "../store/Store";
+import { useNavigate, useLocation } from "react-router-dom";
 
 const ChatList = ({ onSelectChat }) => {
   const { chats, loading, error, markAsRead, unreadCount } = useSocket();
   const [searchQuery, setSearchQuery] = useState("");
   const { selectedChat } = useSelector((state) => state.auth);
   const dispatch = useDispatch();
+  const navigate = useNavigate();
+  const location = useLocation();
 
   useEffect(() => {
-    const savedChat = localStorage.getItem("selectedChat");
-    if (savedChat) {
-      const parsedChat = JSON.parse(savedChat);
-      dispatch(setSelectedChat(parsedChat));
-      dispatch(setImageURL(HandleAvatar(parsedChat.sender)));
+    const params = new URLSearchParams(location.search);
+    const chatId = params.get("chatId");
+    const sender = params.get("sender");
+
+    if (chatId && sender) {
+      dispatch(setSelectedChat({ id: chatId, sender }));
+      dispatch(setImageURL(HandleAvatar(sender)));
     }
-  }, [dispatch]);
+  }, [location.search, dispatch]);
 
   const handleSearchChange = (event) => {
     setSearchQuery(event.target.value);
@@ -29,7 +34,7 @@ const ChatList = ({ onSelectChat }) => {
   const handleSelectChat = (chat, imageURL) => {
     markAsRead(chat.sender);
     onSelectChat(chat, imageURL);
-    localStorage.setItem("selectedChat", JSON.stringify(chat));
+    navigate(`?chatId=${chat.id}&sender=${chat.sender}`);
   };
 
   const filteredChats = chats.filter(

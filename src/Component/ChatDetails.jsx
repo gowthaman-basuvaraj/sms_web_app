@@ -6,6 +6,7 @@ import Avatar from "../UI/Avatar";
 import { useDispatch, useSelector } from "react-redux";
 import { setImageURL, setSelectedChat } from "../store/Store";
 import Toggle from "../UI/Toggle";
+import { useNavigate } from "react-router-dom";
 
 const ChatDetails = () => {
   const { socket } = useSocket();
@@ -19,6 +20,7 @@ const ChatDetails = () => {
   });
 
   const dispatch = useDispatch();
+  const navigate = useNavigate();
 
   const handleOnCloseChat = () => {
     dispatch(
@@ -30,7 +32,7 @@ const ChatDetails = () => {
       })
     );
     dispatch(setImageURL(""));
-    localStorage.removeItem("selectedChat");
+    navigate("/");
   };
 
   useEffect(() => {
