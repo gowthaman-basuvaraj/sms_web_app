@@ -1,8 +1,4 @@
-import {
-  configureStore,
-  createAsyncThunk,
-  createSlice,
-} from "@reduxjs/toolkit";
+import {configureStore, createAsyncThunk, createSlice,} from "@reduxjs/toolkit";
 
 // Async thunk to fetch user-specific mute preferences for a sender
 const fetchUserPreferences = createAsyncThunk(
@@ -16,8 +12,7 @@ const fetchUserPreferences = createAsyncThunk(
     if (!res.ok) {
       throw new Error("Failed to fetch user preferences");
     }
-    const data = await res.json();
-    return data;
+    return await res.json();
   }
 );
 
@@ -160,8 +155,7 @@ const authSlice = createSlice({
       .addCase(fetchUserPreferences.pending, (state) => {
       })
       .addCase(fetchUserPreferences.fulfilled, (state, action) => {
-        const muteStatus = action.payload.preferences[0].mutePreferences === 1;
-        state.selectedChat.mute = muteStatus;
+        state.selectedChat.mute = action.payload.preferences[0].mutePreferences === 1;
       })
       .addCase(fetchUserPreferences.rejected, (state, action) => {
         console.error(
@@ -171,7 +165,6 @@ const authSlice = createSlice({
       })
 
       .addCase(fetchAllSenderMutePreferences.fulfilled, (state, action) => {
-        
         const userName = state.user.name;
         state.mutePreferences[userName] = {};
         action.payload.forEach((pref) => {
