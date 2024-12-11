@@ -218,12 +218,17 @@ const ChatDetails = () => {
                   return (
                     <div
                       key={message.id}
-                      className={`mt-3 p-3 rounded-lg shadow-md max-w-[75%] ${
+                      className={`mt-3 p-3 rounded-lg shadow-md w-full ${
                         message.sender === "me"
                           ? "bg-gray-700 self-end"
                           : "bg-gray-900"
                       }`}
                     >
+                      {message.sentStamp && (
+                        <p className="text-md mb-1 text-right text-white">
+                          {message.sentStamp}
+                        </p>
+                      )}
                       <p className="text-lg">{message.text}</p>
                       {message.sim && (
                         <p className="text-md text-gray-300 mt-1">
@@ -248,11 +253,6 @@ const ChatDetails = () => {
                           )}
                         </button>
                       )}
-                      {message.sentStamp && (
-                        <p className="text-md mt-1 text-right text-gray-400">
-                          {message.sentStamp}
-                        </p>
-                      )}
                     </div>
                   );
                 })
@@ -263,12 +263,17 @@ const ChatDetails = () => {
                 return (
                   <div
                     key={message.id}
-                    className={`mt-2 p-3 rounded-lg shadow-md max-w-[75%] ${
+                    className={`mt-2 p-3 rounded-lg shadow-md w-full ${
                       message.sender === "me"
                         ? "bg-gray-700 self-end"
                         : "bg-gray-900"
                     }`}
                   >
+                    {message.sentStamp && (
+                      <p className="text-md mb-1 text-right text-white">
+                        {message.sentStamp}
+                      </p>
+                    )}
                     <p className="text-lg">{message.text}</p>
                     {message.sim && (
                       <p className="text-md text-gray-300 mt-1">
@@ -292,11 +297,6 @@ const ChatDetails = () => {
                           </>
                         )}
                       </button>
-                    )}
-                    {message.sentStamp && (
-                      <p className="text-md mt-1 text-right text-gray-400">
-                        {message.sentStamp}
-                      </p>
                     )}
                   </div>
                 );
