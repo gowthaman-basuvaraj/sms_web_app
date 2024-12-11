@@ -30,6 +30,7 @@ const ChatDetails = () => {
       })
     );
     dispatch(setImageURL(""));
+    localStorage.removeItem("selectedChat");
   };
 
   useEffect(() => {

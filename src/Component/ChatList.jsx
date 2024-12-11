@@ -1,16 +1,26 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import PropTypes from "prop-types";
 import { FaSearch } from "react-icons/fa";
 import Loader from "./Loader";
 import { useSocket } from "./SocketProvider";
 import Avatar, { HandleAvatar } from "../UI/Avatar";
-import { useSelector } from "react-redux";
+import { useSelector, useDispatch } from "react-redux";
+import { setSelectedChat, setImageURL } from "../store/Store";
 
 const ChatList = ({ onSelectChat }) => {
   const { chats, loading, error, markAsRead, unreadCount } = useSocket();
   const [searchQuery, setSearchQuery] = useState("");
-
   const { selectedChat } = useSelector((state) => state.auth);
+  const dispatch = useDispatch();
+
+  useEffect(() => {
+    const savedChat = localStorage.getItem("selectedChat");
+    if (savedChat) {
+      const parsedChat = JSON.parse(savedChat);
+      dispatch(setSelectedChat(parsedChat));
+      dispatch(setImageURL(HandleAvatar(parsedChat.sender)));
+    }
+  }, [dispatch]);
 
   const handleSearchChange = (event) => {
     setSearchQuery(event.target.value);
@@ -19,6 +29,7 @@ const ChatList = ({ onSelectChat }) => {
   const handleSelectChat = (chat, imageURL) => {
     markAsRead(chat.sender);
     onSelectChat(chat, imageURL);
+    localStorage.setItem("selectedChat", JSON.stringify(chat));
   };
 
   const filteredChats = chats.filter(
