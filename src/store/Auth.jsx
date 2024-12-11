@@ -87,7 +87,6 @@ export const Auth = ({ children }) => {
         });
 
         if (authenticated) {
-          console.log("keycloak: ", keycloak);
 
           // localStorage.setItem("keyclock", keycloak);
           // localStorage.setItem("refresh_token", keycloak.refreshToken);

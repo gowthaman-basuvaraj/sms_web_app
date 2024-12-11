@@ -20,7 +20,6 @@ const App = () => {
   };
 
   useEffect(() => {
-    console.log("User:", user);
     dispatch(fetchAllSenderMutePreferences(user.name));
   }, [user]);
 

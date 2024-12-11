@@ -15,13 +15,11 @@ export const HandleAccess = () => {
   };
 
   const refreshAccessToken = async () => {
-    console.log("Access token expired, refreshing...");
     const tokens = await RefreshToken();
 
     if (!tokens) {
       console.error("Failed to refresh token, user cannot access");
       dispatch(setHaveAccess(false));
-      // localStorage.setItem("haveAccess", false);
       return null;
     }
 
@@ -57,11 +55,9 @@ export const HandleAccess = () => {
         body: JSON.stringify(user),
       });
 
-      console.log("User data:", user);
       if (!res.ok) {
         throw new Error("Failed to add user data");
       }
-      console.log("User data added successfully to the database");
     } catch (error) {
       console.error("Failed to check access:", error);
     }
@@ -73,8 +69,6 @@ export const HandleAccess = () => {
       if (newToken) {
         dispatch(setToken(newToken));
         dispatch(setRefreshToken(refresh_token));
-        // localStorage.setItem("token", newToken);
-        // localStorage.setItem("refresh_token", refresh_token);
       } else {
         return;
       }

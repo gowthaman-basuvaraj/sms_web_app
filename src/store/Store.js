@@ -8,7 +8,6 @@ import {
 const fetchUserPreferences = createAsyncThunk(
   "get/user/preferences",
   async ({ userName, sender }) => {
-    console.log("Fetching user preferences data", userName, sender);
     const res = await fetch(
       `${
         import.meta.env.VITE_BACKEND_API
@@ -18,7 +17,6 @@ const fetchUserPreferences = createAsyncThunk(
       throw new Error("Failed to fetch user preferences");
     }
     const data = await res.json();
-    console.log("Fetched data:", data);
     return data;
   }
 );
@@ -46,7 +44,6 @@ const fetchAllSenderMutePreferences = createAsyncThunk(
 const updateMutePreference = createAsyncThunk(
   "/post/user/preferences",
   async ({ userName, sender, mute }) => {
-    console.log("Updating mute preference:", userName, sender, mute);
     const res = await fetch(
       `${import.meta.env.VITE_BACKEND_API}/user/preference`,
       {
@@ -116,7 +113,7 @@ const authSlice = createSlice({
     },
     setSelectedChat: (state, action) => {
       const { id, sender, sim, mute } = action.payload;
-      console.log("Setting selected chat in store", id, sender, sim, mute);
+      // console.log("Setting selected chat in store", id, sender, sim, mute);
       state.selectedChat = { id, sender, sim, mute };
     },
     setKeyclock: (state, action) => {
@@ -161,12 +158,10 @@ const authSlice = createSlice({
   extraReducers: (builder) => {
     builder
       .addCase(fetchUserPreferences.pending, (state) => {
-        console.log("Fetching user preferences...");
       })
       .addCase(fetchUserPreferences.fulfilled, (state, action) => {
         const muteStatus = action.payload.preferences[0].mutePreferences === 1;
         state.selectedChat.mute = muteStatus;
-        console.log("Updated selected chat mute status:", muteStatus);
       })
       .addCase(fetchUserPreferences.rejected, (state, action) => {
         console.error(
@@ -176,10 +171,7 @@ const authSlice = createSlice({
       })
 
       .addCase(fetchAllSenderMutePreferences.fulfilled, (state, action) => {
-        console.log(
-          "All sender mute preferences fetched successfully:",
-          action.payload
-        );
+        
         const userName = state.user.name;
         state.mutePreferences[userName] = {};
         action.payload.forEach((pref) => {
@@ -201,7 +193,6 @@ const authSlice = createSlice({
         }
         state.mutePreferences[userName][sender] = mute;
         state.selectedChat.mute = mute;
-        console.log("Mute preference updated successfully:", action.payload);
       })
       .addCase(updateMutePreference.rejected, (state, action) => {
         console.error(
