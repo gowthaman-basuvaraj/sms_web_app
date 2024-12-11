@@ -134,31 +134,25 @@ export const SocketProvider = ({ children, handleSelectChat }) => {
         },
         body: JSON.stringify({ sender }),
       });
-
-      // Fetch the updated unread count
-      const response = await fetch(
-        `${import.meta.env.VITE_BACKEND_API}/messages/unread-count`
-      );
-      const data = await response.json();
-
-      if (data.status === "success") {
-        setState((prevState) => {
-          const updatedChats = prevState.chats.map((chat) => {
-            if (chat.sender === sender) {
-              return { ...chat, isRead: true };
-            }
-            return chat;
-          });
-
-          return {
-            ...prevState,
-            unreadCount: data.unreadCount,
-            chats: updatedChats,
-          };
+  
+      // Update the unread count locally
+      setState((prevState) => {
+        const updatedChats = prevState.chats.map((chat) => {
+          if (chat.sender === sender) {
+            return { ...chat, isRead: true };
+          }
+          return chat;
         });
-      } else {
-        throw new Error("Failed to fetch updated unread count");
-      }
+  
+        const updatedUnreadCount = { ...prevState.unreadCount };
+        updatedUnreadCount[sender] = 0;
+  
+        return {
+          ...prevState,
+          unreadCount: updatedUnreadCount,
+          chats: updatedChats,
+        };
+      });
     } catch (error) {
       console.error("Failed to mark messages as read:", error);
     }
