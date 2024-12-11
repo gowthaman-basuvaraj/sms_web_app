@@ -175,6 +175,8 @@ const ChatDetails = () => {
     return <div className="p-4 text-white bg-gray-900">{error}</div>;
   }
 
+  const messagesToDisplay = state.searchQuery ? filteredChats : state.messages;
+
   return (
     <>
       {selectedChat.id !== 0 && (
@@ -207,58 +209,12 @@ const ChatDetails = () => {
             </div>
           </div>
           <div className="flex-grow overflow-y-auto p-4 bg-gray-800">
-            {state.searchQuery?.length > 0 ? (
-              filteredChats.length === 0 ? (
-                <div className="mt-2 text-lg font-bold text-center">
-                  Not found
-                </div>
-              ) : (
-                filteredChats.map((message) => {
-                  const otp = extractOTP(message.text);
-                  return (
-                    <div
-                      key={message.id}
-                      className={`mt-3 p-3 rounded-lg shadow-md w-full ${
-                        message.sender === "me"
-                          ? "bg-gray-700 self-end"
-                          : "bg-gray-900"
-                      }`}
-                    >
-                      {message.sentStamp && (
-                        <p className="text-md mb-1 text-right text-white">
-                          {message.sentStamp}
-                        </p>
-                      )}
-                      <p className="text-lg">{message.text}</p>
-                      {message.sim && (
-                        <p className="text-md text-gray-300 mt-1">
-                          <strong>SIM:</strong> {message.sim}
-                        </p>
-                      )}
-                      {otp && (
-                        <button
-                          onClick={() => copyToClipboard(otp, message.id)}
-                          className="mt-2 bg-gray-800 text-white px-2 py-1 rounded flex items-center"
-                        >
-                          {state.copiedOTPMessageId === message.id ? (
-                            <>
-                              <FaClipboardCheck className="mr-2" />
-                              OTP Copied
-                            </>
-                          ) : (
-                            <>
-                              <FaClipboard className="mr-2" />
-                              Copy OTP
-                            </>
-                          )}
-                        </button>
-                      )}
-                    </div>
-                  );
-                })
-              )
+            {messagesToDisplay.length === 0 ? (
+              <div className="mt-2 text-lg font-bold text-center">
+                Not found
+              </div>
             ) : (
-              state.messages.map((message) => {
+              messagesToDisplay.map((message) => {
                 const otp = extractOTP(message.text);
                 return (
                   <div
