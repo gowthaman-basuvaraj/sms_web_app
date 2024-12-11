@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import { jwtDecode } from "jwt-decode";
-import { RefreshToken } from "../store/Auth";
+import { RefreshToken } from "./Auth.jsx";
 import { useDispatch, useSelector } from "react-redux";
 import { setToken, setHaveAccess, setRefreshToken, setUser } from "./Store";
 
