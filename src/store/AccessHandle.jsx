@@ -37,11 +37,9 @@ export const HandleAccess = () => {
     };
     dispatch(
       setHaveAccess(
-        decodedToken.realm_access.roles.includes(
-          import.meta.env.VITE_REALM_ACCESS
+        !!decodedToken.realm_access.roles.includes(
+            import.meta.env.VITE_REALM_ACCESS
         )
-          ? true
-          : false
       )
     );
 
