@@ -10,7 +10,7 @@ import { useNavigate } from "react-router-dom";
 
 const ChatDetails = () => {
   const { socket } = useSocket();
-  const { selectedChat, imageURL } = useSelector((state) => state.auth);
+  const { selectedChat, imageURL, token } = useSelector((state) => state.auth);
 
   const [state, setState] = useState({
     messages: [],
@@ -55,9 +55,14 @@ const ChatDetails = () => {
       }));
       try {
         const response = await fetch(
-          `${import.meta.env.VITE_BACKEND_API}/messages?sender=${
-            selectedChat.sender
-          }`
+          `${import.meta.env.VITE_BACKEND_API}/messages?sender=${selectedChat.sender}`,
+          {
+            method: "GET",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`, 
+            },
+          }
         );
         const data = await response.json();
 

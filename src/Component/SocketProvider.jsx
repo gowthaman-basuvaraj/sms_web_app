@@ -16,7 +16,7 @@ export const SocketProvider = ({ children, handleSelectChat }) => {
     unreadCount: {},
   });
 
-  const { mutePreferences, user } = useSelector(
+  const { mutePreferences, user, token } = useSelector(
     (state) => state.auth
   );
 
@@ -24,7 +24,14 @@ export const SocketProvider = ({ children, handleSelectChat }) => {
     const fetchChats = async () => {
       try {
         const response = await fetch(
-          `${import.meta.env.VITE_BACKEND_API}/messages/recent`
+          `${import.meta.env.VITE_BACKEND_API}/messages/recent`,
+          {
+            method: "GET",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`, 
+            },
+          }
         );
         const data = await response.json();
 

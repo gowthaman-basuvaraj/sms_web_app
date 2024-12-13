@@ -19,14 +19,19 @@ const fetchUserPreferences = createAsyncThunk(
 // Async thunk to fetch all sender mute preferences for a user
 const fetchAllSenderMutePreferences = createAsyncThunk(
   "get/all/sender/mute/preferences",
-  async (userName) => {
+  async (userName, token) => {
     if(!userName){
       return []
     }
     const res = await fetch(
-      `${
-        import.meta.env.VITE_BACKEND_API
-      }/user/all/preferences?userName=${userName}`
+      `${import.meta.env.VITE_BACKEND_API}/user/all/preferences?userName=${userName}`,
+      {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      }
     );
     if (!res.ok) {
       throw new Error("Failed to fetch all sender mute preferences");
