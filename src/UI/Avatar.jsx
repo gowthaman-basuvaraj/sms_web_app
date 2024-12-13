@@ -36,7 +36,7 @@ export const HandleAvatar = (sender) => {
 
     const distance = levenshtein.get(target, keyLower);
 
-    const isPriorityKey = ["hdfc", "icici", "sbi", "amazon", "canbnk"].includes(
+    const isPriorityKey = ["hdfc", "icic", "sbi", "amazon", "kotak", "sbi", "canbnk"].includes(
       keyLower
     );
 
