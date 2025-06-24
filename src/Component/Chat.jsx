@@ -13,7 +13,7 @@ export default function Chat() {
     chatListWidth: 450,
   });
   const dispatch = useDispatch();
-  const { user } = useSelector((state) => state.auth);
+  const { user, token } = useSelector((state) => state.auth);
 
   const handleSelectChat = (chat, imageURL) => {
     dispatch(setSelectedChat(chat));
@@ -21,7 +21,7 @@ export default function Chat() {
     const userName = user.name;
     const sender = chat.sender;
     console.log("Selected chat in App:", sender, "user is: ", userName);
-    dispatch(fetchUserPreferences({ userName, sender }));
+    dispatch(fetchUserPreferences({ userName, sender, token }));
   };
 
   const handleResize = (e) => {

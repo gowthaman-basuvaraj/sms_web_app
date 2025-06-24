@@ -12,7 +12,7 @@ const App = () => {
   const dispatch = useDispatch();
   const [loading, setLoading] = useState(true);
 
-  const { haveAccess, user } = useSelector((state) => state.auth);
+  const { haveAccess, user, token } = useSelector((state) => state.auth);
 
   const handleSelectChat = (chat, imageURL) => {
     dispatch(setSelectedChat(chat));
@@ -20,16 +20,14 @@ const App = () => {
   };
 
   useEffect(() => {
-    dispatch(fetchAllSenderMutePreferences(user.name));
+    dispatch(fetchAllSenderMutePreferences({userName: user.name, token}));
   }, [user]);
 
-  const fetchAccessState = async () => {
-    await new Promise((r) => setTimeout(r, 500));
-    setLoading(false);
-  };
   
   useEffect(() => {
-    fetchAccessState();
+    setTimeout(() => {
+      setLoading(false)
+    }, 1000)
   }, []);
 
 

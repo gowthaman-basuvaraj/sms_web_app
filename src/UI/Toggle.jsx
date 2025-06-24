@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 
 const Toggle = () => {
   const dispatch = useDispatch();
-  const { selectedChat, user } = useSelector((state) => state.auth);
+  const { selectedChat, user, token } = useSelector((state) => state.auth);
   const [muteState, setmuteState] = useState(selectedChat.mute);
 
   useEffect(() => {
@@ -16,7 +16,7 @@ const Toggle = () => {
     const sender = selectedChat.sender;
     const newMuteState = !muteState; 
     setmuteState(newMuteState);
-    dispatch(updateMutePreference({ userName, sender, mute: newMuteState })); 
+    dispatch(updateMutePreference({ userName, sender, mute: newMuteState, token   }));
   };
 
   return (

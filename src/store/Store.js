@@ -3,11 +3,14 @@ import {configureStore, createAsyncThunk, createSlice,} from "@reduxjs/toolkit";
 // Async thunk to fetch user-specific mute preferences for a sender
 const fetchUserPreferences = createAsyncThunk(
   "get/user/preferences",
-  async ({ userName, sender }) => {
+  async ({ userName, sender, token }) => {
     const res = await fetch(
-      `${
-        import.meta.env.VITE_BACKEND_API
-      }/user/preferences?userName=${userName}&sender=${sender}`
+      `${import.meta.env.VITE_BACKEND_API}/user/preferences?userName=${userName}&sender=${sender}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
+        }
     );
     if (!res.ok) {
       throw new Error("Failed to fetch user preferences");
@@ -19,7 +22,8 @@ const fetchUserPreferences = createAsyncThunk(
 // Async thunk to fetch all sender mute preferences for a user
 const fetchAllSenderMutePreferences = createAsyncThunk(
   "get/all/sender/mute/preferences",
-  async (userName, token) => {
+  async ({userName, token}) => {
+    console.log(userName, token, 'fetchAll')
     if(!userName){
       return []
     }
@@ -44,13 +48,15 @@ const fetchAllSenderMutePreferences = createAsyncThunk(
 // Async thunk to update mute preference
 const updateMutePreference = createAsyncThunk(
   "/post/user/preferences",
-  async ({ userName, sender, mute }) => {
+  async ({ userName, sender, mute, token }) => {
+    console.log(userName, token, sender, mute, 'updateMutePreference')
     const res = await fetch(
       `${import.meta.env.VITE_BACKEND_API}/user/preference`,
       {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({
           userName,
