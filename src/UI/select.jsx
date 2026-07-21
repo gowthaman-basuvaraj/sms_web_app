@@ -1,3 +1,6 @@
+/* eslint-disable react/prop-types */
+// Generic Radix Select primitives (shadcn-style); prop-types validation is intentionally
+// disabled for these thin forwardRef wrappers.
 import * as React from "react"
 import * as SelectPrimitive from "@radix-ui/react-select"
 import { Check, ChevronDown, ChevronUp } from "lucide-react"

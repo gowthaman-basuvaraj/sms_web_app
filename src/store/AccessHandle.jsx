@@ -1,106 +1,50 @@
 import { useEffect } from "react";
 import { jwtDecode } from "jwt-decode";
-import { RefreshToken } from "./Auth.jsx";
 import { useDispatch, useSelector } from "react-redux";
-import { setToken, setHaveAccess, setRefreshToken, setUser } from "./Store";
+import { setHaveAccess, setUser } from "./Store";
 
+const API = import.meta.env.VITE_BACKEND_API;
+const REQUIRED_ROLE = import.meta.env.VITE_REALM_ACCESS;
+
+/**
+ * Derives the user + access flag from the current token and registers the user with the
+ * backend. Token refresh is handled by keycloak-js (see Auth.jsx); this simply reacts to
+ * the token in the store changing.
+ */
 export const HandleAccess = () => {
   const dispatch = useDispatch();
-  const { refresh_token, token } = useSelector((state) => state.auth);
-
-  const isTokenExpired = (token) => {
-    const decoded = jwtDecode(token);
-    const currentTime = Math.floor(Date.now() / 1000);
-    return decoded.exp < currentTime - 300;
-  };
-
-  const refreshAccessToken = async () => {
-    const tokens = await RefreshToken();
-
-    if (!tokens) {
-      console.error("Failed to refresh token, user cannot access");
-      dispatch(setHaveAccess(false));
-      return null;
-    }
-
-    return tokens.accessToken;
-  };
-
-  const access = async (token, decodedToken) => {
-    const user = {
-      name: decodedToken.preferred_username,
-      role: decodedToken.realm_access.roles.includes(
-        import.meta.env.VITE_REALM_ACCESS
-      )
-        ? import.meta.env.VITE_REALM_ACCESS
-        : "",
-    };
-    dispatch(
-      setHaveAccess(
-        !!decodedToken.realm_access.roles.includes(
-            import.meta.env.VITE_REALM_ACCESS
-        )
-      )
-    );
-
-    try {
-      const res = await fetch(`${import.meta.env.VITE_BACKEND_API}/user`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify(user),
-      });
-
-      if (!res.ok) {
-        throw new Error("Failed to add user data");
-      }
-    } catch (error) {
-      console.error("Failed to check access:", error);
-    }
-  };
-
-  const handleToken = async () => {
-    if (!token || isTokenExpired(token)) {
-      const newToken = await refreshAccessToken();
-      if (newToken) {
-        dispatch(setToken(newToken));
-        dispatch(setRefreshToken(refresh_token));
-      } else {
-        return;
-      }
-    }
-
-    const decodedToken = jwtDecode(token);
-    dispatch(
-      setUser({
-        name: decodedToken.preferred_username,
-        role: decodedToken.realm_access.roles.includes(
-          import.meta.env.VITE_REALM_ACCESS
-        )
-          ? import.meta.env.VITE_REALM_ACCESS
-          : "",
-      })
-    );
-    dispatch(
-      setHaveAccess(
-        decodedToken.realm_access.roles.includes(
-          import.meta.env.VITE_REALM_ACCESS
-        )
-          ? true
-          : false
-      )
-    );
-
-    await access(token, decodedToken);
-  };
+  const { token } = useSelector((state) => state.auth);
 
   useEffect(() => {
-    if (token) {
-      handleToken();
+    if (!token) return;
+
+    let decoded;
+    try {
+      decoded = jwtDecode(token);
+    } catch (error) {
+      console.error("Failed to decode token:", error);
+      return;
     }
-  }, [token]);
+
+    const roles = decoded.realm_access?.roles || [];
+    const hasAccess = roles.includes(REQUIRED_ROLE);
+    const user = {
+      name: decoded.preferred_username,
+      role: hasAccess ? REQUIRED_ROLE : "",
+    };
+
+    dispatch(setUser(user));
+    dispatch(setHaveAccess(hasAccess));
+
+    fetch(`${API}/user`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify(user),
+    }).catch((error) => console.error("Failed to register user:", error));
+  }, [token, dispatch]);
 
   return null;
 };

@@ -107,7 +107,7 @@ const ChatDetails = () => {
         socket.off("newMessage", handleNewMessage);
       };
     }
-  }, [selectedChat, socket]);
+  }, [selectedChat, socket, token]);
 
   const handleSearchChange = (event) => {
     setState((prevState) => ({
