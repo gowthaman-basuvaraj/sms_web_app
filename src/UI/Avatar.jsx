@@ -4,11 +4,16 @@ import levenshtein from "fast-levenshtein";
 
 const Avatar = ({ imageURL, sender }) => {
   return (
-    <div className="p-2 h-12 w-12">
+    <div className="p-2 h-12 w-12 shrink-0">
       <img
-        src={imageURL}
+        src={imageURL || avatar.default}
         alt={sender}
-        className="inline-block border border-green-500 rounded-full ring-2 ring-white ring-opacity-50"
+        onError={(e) => {
+          if (e.currentTarget.src !== window.location.origin + avatar.default) {
+            e.currentTarget.src = avatar.default;
+          }
+        }}
+        className="h-full w-full object-cover inline-block border border-green-500 rounded-full ring-2 ring-white ring-opacity-50"
       />
     </div>
   );
@@ -22,7 +27,7 @@ Avatar.propTypes = {
 export default Avatar;
 
 export const HandleAvatar = (sender) => {
-  const candidates = Object.keys(avatar);
+  const candidates = Object.keys(avatar).filter((k) => k !== "default");
   const target = sender?.toLowerCase().trim() || "";
 
   if (target === "pay") return avatar.default;

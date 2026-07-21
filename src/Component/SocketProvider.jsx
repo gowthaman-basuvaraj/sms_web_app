@@ -1,4 +1,10 @@
-import { createContext, useContext, useEffect, useState } from "react";
+import {
+  createContext,
+  useContext,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
 import io from "socket.io-client";
 import PropTypes from "prop-types";
 import { HandleAvatar } from "../UI/Avatar";
@@ -8,6 +14,8 @@ const SocketContext = createContext();
 
 export const useSocket = () => useContext(SocketContext);
 
+const API = import.meta.env.VITE_BACKEND_API;
+
 export const SocketProvider = ({ children, handleSelectChat }) => {
   const [state, setState] = useState({
     chats: [],
@@ -15,34 +23,38 @@ export const SocketProvider = ({ children, handleSelectChat }) => {
     error: null,
     unreadCount: {},
   });
+  const [socket, setSocket] = useState(null);
 
-  const { mutePreferences, user, token } = useSelector(
-    (state) => state.auth
-  );
+  const { mutePreferences, user, token } = useSelector((state) => state.auth);
+
+  // Keep the latest values available to the long-lived socket handler without
+  // resubscribing (which would reconnect the socket on every store change).
+  const muteRef = useRef(mutePreferences);
+  const userRef = useRef(user);
+  const handleSelectRef = useRef(handleSelectChat);
+  muteRef.current = mutePreferences;
+  userRef.current = user;
+  handleSelectRef.current = handleSelectChat;
 
   useEffect(() => {
+    if (!token) return;
+
     const fetchChats = async () => {
       try {
-        const response = await fetch(
-          `${import.meta.env.VITE_BACKEND_API}/messages/recent`,
-          {
-            method: "GET",
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${token}`, 
-            },
-          }
-        );
+        const response = await fetch(`${API}/messages/recent`, {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        });
         const data = await response.json();
-
         if (data.status === "success" && Array.isArray(data.messages)) {
           const unreadCount = data.messages.reduce((acc, message) => {
             acc[message.sender] = message.unreadCount;
             return acc;
           }, {});
-
-          setState((prevState) => ({
-            ...prevState,
+          setState((prev) => ({
+            ...prev,
             chats: data.messages,
             loading: false,
             error: null,
@@ -52,8 +64,8 @@ export const SocketProvider = ({ children, handleSelectChat }) => {
           throw new Error("Unexpected data format");
         }
       } catch (error) {
-        setState((prevState) => ({
-          ...prevState,
+        setState((prev) => ({
+          ...prev,
           chats: [],
           loading: false,
           error: "Failed to fetch chats",
@@ -64,21 +76,20 @@ export const SocketProvider = ({ children, handleSelectChat }) => {
 
     fetchChats();
 
-    const socket = io(`${import.meta.env.VITE_BACKEND_API}`);
+    // Send the token on the handshake so the server can authenticate the realtime channel.
+    const activeSocket = io(API, { auth: { token } });
+    setSocket(activeSocket);
 
-    socket.on("newMessage", (newMessage) => {
-      setState((prevState) => {
-        const updatedChats = prevState.chats.filter(
+    activeSocket.on("newMessage", (newMessage) => {
+      setState((prev) => {
+        const updatedChats = prev.chats.filter(
           (chat) => chat.sender !== newMessage.sender
         );
-        const updatedUnreadCount = { ...prevState.unreadCount };
-        if (!updatedUnreadCount[newMessage.sender]) {
-          updatedUnreadCount[newMessage.sender] = 0;
-        }
-        updatedUnreadCount[newMessage.sender] += 1;
-
+        const updatedUnreadCount = { ...prev.unreadCount };
+        updatedUnreadCount[newMessage.sender] =
+          (updatedUnreadCount[newMessage.sender] || 0) + 1;
         return {
-          ...prevState,
+          ...prev,
           chats: [newMessage, ...updatedChats],
           loading: false,
           error: null,
@@ -86,91 +97,73 @@ export const SocketProvider = ({ children, handleSelectChat }) => {
         };
       });
 
-      const muteState = mutePreferences[user.name][newMessage.sender];
-      console.log(
-        "mute preference object in store:",
-        mutePreferences[user.name][newMessage.sender]
-      );
-
-      if (!muteState) {
-        // Play notification sound
-        const audio = new Audio("/sound.mp3");
-        audio.play();
+      // Guard: preferences may not be loaded yet for this user/sender.
+      const muted =
+        muteRef.current?.[userRef.current?.name]?.[newMessage.sender];
+      if (!muted) {
+        new Audio("/sound.mp3").play().catch(() => {});
       }
 
-      // Show desktop notification
-      if (Notification.permission === "granted") {
-        const notification = new Notification("New message received", {
-          body: `${newMessage.sender}: ${newMessage.text}`,
-        });
-
-        const imageURL = HandleAvatar(newMessage.sender);
-
-        notification.onclick = () => {
-          handleSelectChat(newMessage, imageURL);
-          window.focus();
-        };
-      } else if (Notification.permission !== "denied") {
-        Notification.requestPermission().then((permission) => {
-          const imageURL = HandleAvatar(newMessage.sender);
-          if (permission === "granted") {
-            const notification = new Notification("New message received", {
-              body: `${newMessage.sender}: ${newMessage.text}`,
-            });
-
-            notification.onclick = () => {
-              handleSelectChat(newMessage, imageURL);
-              window.focus();
-            };
-          }
-        });
-      }
+      notify(newMessage, handleSelectRef.current);
     });
 
     return () => {
-      socket.disconnect();
+      activeSocket.disconnect();
+      setSocket(null);
     };
-  }, [handleSelectChat, mutePreferences, user.name]);
+  }, [token]);
 
   const markAsRead = async (sender) => {
     try {
-      await fetch(`${import.meta.env.VITE_BACKEND_API}/messages/mark-as-read`, {
+      await fetch(`${API}/messages/mark-as-read`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({ sender }),
       });
-  
-      // Update the unread count locally
-      setState((prevState) => {
-        const updatedChats = prevState.chats.map((chat) => {
-          if (chat.sender === sender) {
-            return { ...chat, isRead: true };
-          }
-          return chat;
-        });
-  
-        const updatedUnreadCount = { ...prevState.unreadCount };
-        updatedUnreadCount[sender] = 0;
-  
-        return {
-          ...prevState,
-          unreadCount: updatedUnreadCount,
-          chats: updatedChats,
-        };
-      });
+      setState((prev) => ({
+        ...prev,
+        unreadCount: { ...prev.unreadCount, [sender]: 0 },
+        chats: prev.chats.map((chat) =>
+          chat.sender === sender ? { ...chat, isRead: true } : chat
+        ),
+      }));
     } catch (error) {
       console.error("Failed to mark messages as read:", error);
     }
   };
 
   return (
-    <SocketContext.Provider value={{ ...state, markAsRead }}>
+    <SocketContext.Provider value={{ ...state, socket, markAsRead }}>
       {children}
     </SocketContext.Provider>
   );
 };
+
+// Shows a desktop notification, requesting permission on first use.
+function notify(newMessage, onSelect) {
+  const show = () => {
+    const notification = new Notification("New message received", {
+      body: `${newMessage.sender}: ${newMessage.text}`,
+    });
+    const imageURL = HandleAvatar(newMessage.sender);
+    notification.onclick = () => {
+      onSelect?.(newMessage, imageURL);
+      window.focus();
+    };
+  };
+
+  if (!("Notification" in window)) return;
+  if (Notification.permission === "granted") {
+    show();
+  } else if (Notification.permission !== "denied") {
+    Notification.requestPermission().then((permission) => {
+      if (permission === "granted") show();
+    });
+  }
+}
 
 SocketProvider.propTypes = {
   children: PropTypes.node.isRequired,

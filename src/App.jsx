@@ -5,13 +5,11 @@ import { HandleAccess } from "./store/AccessHandle";
 import { useDispatch, useSelector } from "react-redux";
 import { setImageURL, setSelectedChat, fetchAllSenderMutePreferences } from "./store/Store";
 import Chat from "./Component/Chat";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import Loader from "./Component/Loader";
 
 const App = () => {
   const dispatch = useDispatch();
-  const [loading, setLoading] = useState(true);
-
   const { haveAccess, user, token } = useSelector((state) => state.auth);
 
   const handleSelectChat = (chat, imageURL) => {
@@ -19,19 +17,16 @@ const App = () => {
     dispatch(setImageURL(imageURL));
   };
 
+  // Load this user's mute preferences once we actually have a user + token.
   useEffect(() => {
-    dispatch(fetchAllSenderMutePreferences({userName: user.name, token}));
-  }, [user]);
+    if (user?.name && token) {
+      dispatch(fetchAllSenderMutePreferences({ userName: user.name, token }));
+    }
+  }, [user, token, dispatch]);
 
-  
-  useEffect(() => {
-    setTimeout(() => {
-      setLoading(false)
-    }, 1000)
-  }, []);
-
-
-  if (loading) {
+  // Until Keycloak authenticates (login-required redirects the page), show a loader
+  // instead of briefly flashing the "no access" screen.
+  if (!token) {
     return (
       <div className="flex justify-center items-center h-screen bg-gray-800 text-white w-full">
         <Loader />

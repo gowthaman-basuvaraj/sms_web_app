@@ -164,10 +164,10 @@ const authSlice = createSlice({
   },
   extraReducers: (builder) => {
     builder
-      .addCase(fetchUserPreferences.pending, (state) => {
-      })
       .addCase(fetchUserPreferences.fulfilled, (state, action) => {
-        state.selectedChat.mute = action.payload.preferences[0].mutePreferences === 1;
+        const pref = action.payload.preferences?.[0];
+        // New senders have no stored preference yet; the backend defaults them to muted.
+        state.selectedChat.mute = pref ? pref.mutePreferences === 1 : true;
       })
       .addCase(fetchUserPreferences.rejected, (state, action) => {
         console.error(
