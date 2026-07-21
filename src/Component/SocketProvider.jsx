@@ -76,7 +76,8 @@ export const SocketProvider = ({ children, handleSelectChat }) => {
 
     fetchChats();
 
-    const activeSocket = io(API);
+    // Send the token on the handshake so the server can authenticate the realtime channel.
+    const activeSocket = io(API, { auth: { token } });
     setSocket(activeSocket);
 
     activeSocket.on("newMessage", (newMessage) => {
