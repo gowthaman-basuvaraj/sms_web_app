@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { FaSearch, FaClipboard, FaClipboardCheck } from "react-icons/fa";
 import { useSocket } from "./SocketProvider";
 import { IoCloseSharp } from "react-icons/io5";
@@ -18,10 +18,12 @@ const ChatDetails = () => {
     error: null,
     searchQuery: "",
     copiedOTPMessageId: null,
+    isLoading: false,
   });
 
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  const loadedSenderRef = useRef(null);
 
   const handleOnCloseChat = () => {
     dispatch(
@@ -48,11 +50,17 @@ const ChatDetails = () => {
     }
 
     const fetchMessages = async () => {
+      const senderChanged = loadedSenderRef.current !== selectedChat.sender;
+      loadedSenderRef.current = selectedChat.sender;
+      // On a real sender switch, clear so we never show the previous sender's messages.
+      // On a same-sender refresh, keep them until the new ones arrive (no blank). Either
+      // way isLoading suppresses the "Not found" placeholder during the brief swap.
       setState((prevState) => ({
         ...prevState,
-        messages: [],
+        messages: senderChanged ? [] : prevState.messages,
         error: null,
         copiedOTPMessageId: null,
+        isLoading: true,
       }));
       try {
         const response = await authFetch(
@@ -66,6 +74,7 @@ const ChatDetails = () => {
             messages: data.messages,
             error: null,
             copiedOTPMessageId: null,
+            isLoading: false,
           }));
         } else {
           throw new Error("Unexpected data format");
@@ -76,6 +85,7 @@ const ChatDetails = () => {
           messages: [],
           error: "Failed to fetch messages",
           copiedOTPMessageId: null,
+          isLoading: false,
         }));
         console.error("Failed to fetch messages:", error);
       }
@@ -212,16 +222,18 @@ const ChatDetails = () => {
           </div>
           <div className="flex-grow overflow-y-auto p-4 bg-gray-800">
             {messagesToDisplay.length === 0 ? (
-              <div className="mt-2 text-lg font-bold text-center">
-                Not found
-              </div>
+              state.isLoading ? null : (
+                <div className="mt-2 text-lg font-bold text-center">
+                  Not found
+                </div>
+              )
             ) : (
               messagesToDisplay.map((message) => {
                 const otp = extractOTP(message.text);
                 return (
                   <div
                     key={message.id}
-                    className={`mt-2 p-3 rounded-lg shadow-md w-full ${
+                    className={`animate-fade-in mt-2 p-3 rounded-lg shadow-md w-full ${
                       message.sender === "me"
                         ? "bg-gray-700 self-end"
                         : "bg-gray-900"
