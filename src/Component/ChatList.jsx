@@ -56,8 +56,8 @@ const ChatList = ({ onSelectChat }) => {
   }
 
   return (
-    <div className="w-full border-r h-[90vh] border-gray-700 overflow-y-auto flex flex-col bg-gray-900 text-white">
-      <div className="relative p-4 flex items-center bg-gray-800">
+    <div className="w-full h-full overflow-hidden flex flex-col bg-gray-900 text-white">
+      <div className="relative p-3 flex items-center bg-gray-800">
         <input
           type="text"
           placeholder="Search chats..."
@@ -65,9 +65,9 @@ const ChatList = ({ onSelectChat }) => {
           onChange={handleSearchChange}
           className="w-full py-2 pl-10 border border-gray-600 rounded bg-gray-700 text-white"
         />
-        <FaSearch className="absolute left-10 top-1/2 transform -translate-y-1/2 text-gray-400" />
+        <FaSearch className="absolute left-6 top-1/2 transform -translate-y-1/2 text-gray-400" />
       </div>
-      <div className="flex-grow overflow-y-auto">
+      <div className="flex-grow min-h-0 overflow-y-auto">
         {filteredChats.length === 0 ? (
           <div className="mt-2 text-lg font-bold text-center p-4">No results in chats</div>
         ) : (
@@ -75,18 +75,24 @@ const ChatList = ({ onSelectChat }) => {
             <div
               key={chat.id}
               onClick={() => handleSelectChat(chat, HandleAvatar(chat.sender))}
-              className={`p-4 flex items-center cursor-pointer ${
-                chat.id === selectedChat.id ? "bg-gray-700 rounded-md" : ""
+              className={`p-3 flex items-center gap-3 cursor-pointer ${
+                chat.id === selectedChat.id ? "bg-gray-700" : ""
               } hover:bg-gray-800`}
             >
               <Avatar imageURL={HandleAvatar(chat.sender)} sender={chat.sender} />
-              <strong className="truncate w-1/4">{chat.sender}</strong>
-              <span className="truncate w-4/5 ml-2">{chat.text}</span>
-              {unreadCount[chat.sender] > 0 && (
-                <span className="ml-2 bg-green-500 text-white rounded-full px-2 py-1 text-xs">
-                  {unreadCount[chat.sender]}
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center justify-between gap-2">
+                  <strong className="truncate">{chat.sender}</strong>
+                  {unreadCount[chat.sender] > 0 && (
+                    <span className="shrink-0 bg-green-500 text-white rounded-full px-2 py-0.5 text-xs">
+                      {unreadCount[chat.sender]}
+                    </span>
+                  )}
+                </div>
+                <span className="block truncate text-sm text-gray-300">
+                  {chat.text}
                 </span>
-              )}
+              </div>
             </div>
           ))
         )}

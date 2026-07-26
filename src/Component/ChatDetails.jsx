@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { FaSearch, FaClipboard, FaClipboardCheck } from "react-icons/fa";
 import { useSocket } from "./SocketProvider";
-import { IoCloseSharp } from "react-icons/io5";
+import { IoCloseSharp, IoArrowBack } from "react-icons/io5";
 import Avatar from "../UI/Avatar";
 import { useDispatch, useSelector } from "react-redux";
 import { setImageURL, setSelectedChat } from "../store/Store";
@@ -177,7 +177,7 @@ const ChatDetails = () => {
 
   if (selectedChat.id === 0) {
     return (
-      <div className="p-4 flex flex-col w-full h-[90vh] font-bold items-center text-white bg-gray-900">
+      <div className="w-full h-full flex items-center justify-center font-bold text-white bg-gray-900">
         Select a chat to view details!
       </div>
     );
@@ -192,35 +192,43 @@ const ChatDetails = () => {
   return (
     <>
       {selectedChat.id !== 0 && (
-        <div className="flex flex-col w-full h-[90vh] bg-gray-900 text-white">
-          <div className="flex justify-between items-center bg-gray-800 p-2">
-            <div className="flex items-center gap-2">
-              <Avatar imageURL={imageURL} sender={selectedChat.sender} />
-              <h2 className="text-2xl font-bold">{selectedChat.sender}</h2>
+        <div className="flex flex-col w-full h-full bg-gray-900 text-white">
+          <div className="flex items-center gap-2 bg-gray-800 p-2">
+            {/* Back to the list (mobile only). */}
+            <button
+              className="md:hidden shrink-0 p-1 text-white"
+              onClick={handleChatClose}
+              aria-label="Back"
+            >
+              <IoArrowBack className="text-2xl" />
+            </button>
+            <Avatar imageURL={imageURL} sender={selectedChat.sender} />
+            <h2 className="flex-1 min-w-0 truncate text-lg md:text-2xl font-bold">
+              {selectedChat.sender}
+            </h2>
+            <div className="relative hidden sm:flex items-center shrink">
+              <input
+                type="text"
+                placeholder="Search..."
+                value={state.searchQuery}
+                onChange={handleSearchChange}
+                className="w-40 md:w-56 py-2 pl-8 border border-gray-600 rounded bg-gray-700 text-white"
+              />
+              <FaSearch className="absolute left-2 top-1/2 transform -translate-y-1/2 text-gray-400" />
             </div>
-            <div className="flex items-center gap-4">
-              <div className="relative flex items-center">
-                <input
-                  type="text"
-                  placeholder="Search messages..."
-                  value={state.searchQuery}
-                  onChange={handleSearchChange}
-                  className="w-full py-2 pl-10 border border-gray-600 rounded bg-gray-700 text-white"
-                />
-                <FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
-              </div>
-              <div className="">
-                <Toggle />
-              </div>
-              <div
-                className="cursor-pointer p-2 hover:text-red-600"
-                onClick={handleChatClose}
-              >
-                <IoCloseSharp className="font-bold text-3xl" />
-              </div>
+            <div className="shrink-0">
+              <Toggle />
             </div>
+            {/* Close (desktop only; mobile uses the back arrow). */}
+            <button
+              className="hidden md:block shrink-0 cursor-pointer p-2 hover:text-red-600"
+              onClick={handleChatClose}
+              aria-label="Close"
+            >
+              <IoCloseSharp className="font-bold text-3xl" />
+            </button>
           </div>
-          <div className="flex-grow overflow-y-auto p-4 bg-gray-800">
+          <div className="flex-grow min-h-0 overflow-y-auto p-4 bg-gray-800">
             {messagesToDisplay.length === 0 ? (
               state.isLoading ? null : (
                 <div className="mt-2 text-lg font-bold text-center">
