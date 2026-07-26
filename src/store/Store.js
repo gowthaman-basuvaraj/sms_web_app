@@ -1,16 +1,12 @@
 import {configureStore, createAsyncThunk, createSlice,} from "@reduxjs/toolkit";
+import { authFetch } from "../lib/api";
 
 // Async thunk to fetch user-specific mute preferences for a sender
 const fetchUserPreferences = createAsyncThunk(
   "get/user/preferences",
-  async ({ userName, sender, token }) => {
-    const res = await fetch(
-      `${import.meta.env.VITE_BACKEND_API}/user/preferences?userName=${userName}&sender=${sender}`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`
-          }
-        }
+  async ({ userName, sender }) => {
+    const res = await authFetch(
+      `/user/preferences?userName=${encodeURIComponent(userName)}&sender=${encodeURIComponent(sender)}`
     );
     if (!res.ok) {
       throw new Error("Failed to fetch user preferences");
@@ -22,20 +18,12 @@ const fetchUserPreferences = createAsyncThunk(
 // Async thunk to fetch all sender mute preferences for a user
 const fetchAllSenderMutePreferences = createAsyncThunk(
   "get/all/sender/mute/preferences",
-  async ({userName, token}) => {
-    console.log(userName, token, 'fetchAll')
-    if(!userName){
-      return []
+  async ({ userName }) => {
+    if (!userName) {
+      return [];
     }
-    const res = await fetch(
-      `${import.meta.env.VITE_BACKEND_API}/user/all/preferences?userName=${userName}`,
-      {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-      }
+    const res = await authFetch(
+      `/user/all/preferences?userName=${encodeURIComponent(userName)}`
     );
     if (!res.ok) {
       throw new Error("Failed to fetch all sender mute preferences");
@@ -48,23 +36,15 @@ const fetchAllSenderMutePreferences = createAsyncThunk(
 // Async thunk to update mute preference
 const updateMutePreference = createAsyncThunk(
   "/post/user/preferences",
-  async ({ userName, sender, mute, token }) => {
-    console.log(userName, token, sender, mute, 'updateMutePreference')
-    const res = await fetch(
-      `${import.meta.env.VITE_BACKEND_API}/user/preference`,
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({
-          userName,
-          senderName: sender,
-          mutePreferences: mute,
-        }),
-      }
-    );
+  async ({ userName, sender, mute }) => {
+    const res = await authFetch(`/user/preference`, {
+      method: "POST",
+      body: JSON.stringify({
+        userName,
+        senderName: sender,
+        mutePreferences: mute,
+      }),
+    });
     if (!res.ok) {
       throw new Error("Failed to update user preferences");
     }

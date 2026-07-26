@@ -7,10 +7,11 @@ import { useDispatch, useSelector } from "react-redux";
 import { setImageURL, setSelectedChat } from "../store/Store";
 import Toggle from "../UI/Toggle";
 import { useNavigate } from "react-router-dom";
+import { authFetch } from "../lib/api";
 
 const ChatDetails = () => {
   const { socket } = useSocket();
-  const { selectedChat, imageURL, token } = useSelector((state) => state.auth);
+  const { selectedChat, imageURL } = useSelector((state) => state.auth);
 
   const [state, setState] = useState({
     messages: [],
@@ -54,15 +55,8 @@ const ChatDetails = () => {
         copiedOTPMessageId: null,
       }));
       try {
-        const response = await fetch(
-          `${import.meta.env.VITE_BACKEND_API}/messages?sender=${selectedChat.sender}`,
-          {
-            method: "GET",
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${token}`, 
-            },
-          }
+        const response = await authFetch(
+          `/messages?sender=${encodeURIComponent(selectedChat.sender)}`
         );
         const data = await response.json();
 
@@ -107,7 +101,7 @@ const ChatDetails = () => {
         socket.off("newMessage", handleNewMessage);
       };
     }
-  }, [selectedChat, socket, token]);
+  }, [selectedChat, socket]);
 
   const handleSearchChange = (event) => {
     setState((prevState) => ({
