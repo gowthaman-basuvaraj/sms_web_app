@@ -1,14 +1,8 @@
 import { useEffect } from "react";
-import Keycloak from "keycloak-js";
 import PropTypes from "prop-types";
 import { useDispatch } from "react-redux";
 import { setToken, setRefreshToken, setKeyclock } from "./Store";
-
-const keycloak = new Keycloak({
-  url: import.meta.env.VITE_KEYCLOAK_URL,
-  realm: import.meta.env.VITE_KEYCLOAK_REALM,
-  clientId: import.meta.env.VITE_KEYCLOAK_CLIENTID,
-});
+import { keycloak } from "../lib/keycloak";
 
 // Guard against a second init (React StrictMode / fast refresh).
 let initStarted = false;
@@ -37,6 +31,7 @@ export const Auth = ({ children }) => {
       dispatch(setRefreshToken(keycloak.refreshToken));
     };
 
+    let refreshTimer;
     keycloak
       .init({
         onLoad: "login-required",
@@ -46,19 +41,25 @@ export const Auth = ({ children }) => {
       .then((authenticated) => {
         if (!authenticated) return;
         publish();
-        // keycloak-js refreshes the token itself; just mirror the new one into the store.
+        // Mirror EVERY successful refresh into the store (incl. refreshes triggered by
+        // authFetch), so the socket handshake token stays current too.
+        keycloak.onAuthRefreshSuccess = publish;
         keycloak.onTokenExpired = () => {
-          keycloak
-            .updateToken(30)
-            .then((refreshed) => {
-              if (refreshed) publish();
-            })
-            .catch(() => keycloak.login());
+          keycloak.updateToken(30).catch(() => keycloak.login());
         };
+        // Safety net: refresh proactively so an idle/backgrounded tab never lands on a
+        // 401 (the onTokenExpired timer alone is unreliable when throttled).
+        refreshTimer = setInterval(() => {
+          keycloak.updateToken(70).catch(() => keycloak.login());
+        }, 60000);
       })
       .catch((error) => {
         console.error("Failed to initialize Keycloak:", error);
       });
+
+    return () => {
+      if (refreshTimer) clearInterval(refreshTimer);
+    };
   }, [dispatch]);
 
   return children;

@@ -2,8 +2,8 @@ import { useEffect } from "react";
 import { jwtDecode } from "jwt-decode";
 import { useDispatch, useSelector } from "react-redux";
 import { setHaveAccess, setUser } from "./Store";
+import { authFetch } from "../lib/api";
 
-const API = import.meta.env.VITE_BACKEND_API;
 const REQUIRED_ROLE = import.meta.env.VITE_REALM_ACCESS;
 
 /**
@@ -36,12 +36,8 @@ export const HandleAccess = () => {
     dispatch(setUser(user));
     dispatch(setHaveAccess(hasAccess));
 
-    fetch(`${API}/user`, {
+    authFetch("/user", {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-      },
       body: JSON.stringify(user),
     }).catch((error) => console.error("Failed to register user:", error));
   }, [token, dispatch]);

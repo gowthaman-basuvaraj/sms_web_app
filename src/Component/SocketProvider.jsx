@@ -9,6 +9,8 @@ import io from "socket.io-client";
 import PropTypes from "prop-types";
 import { HandleAvatar } from "../UI/Avatar";
 import { useSelector } from "react-redux";
+import { authFetch } from "../lib/api";
+import { keycloak } from "../lib/keycloak";
 
 const SocketContext = createContext();
 
@@ -36,17 +38,14 @@ export const SocketProvider = ({ children, handleSelectChat }) => {
   userRef.current = user;
   handleSelectRef.current = handleSelectChat;
 
+  const authed = Boolean(token);
+
   useEffect(() => {
-    if (!token) return;
+    if (!authed) return;
 
     const fetchChats = async () => {
       try {
-        const response = await fetch(`${API}/messages/recent`, {
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-        });
+        const response = await authFetch("/messages/recent");
         const data = await response.json();
         if (data.status === "success" && Array.isArray(data.messages)) {
           const unreadCount = data.messages.reduce((acc, message) => {
@@ -76,8 +75,9 @@ export const SocketProvider = ({ children, handleSelectChat }) => {
 
     fetchChats();
 
-    // Send the token on the handshake so the server can authenticate the realtime channel.
-    const activeSocket = io(API, { auth: { token } });
+    // Connect once with a fresh token; the server authenticates the socket at the
+    // handshake, so we don't reconnect on every token refresh.
+    const activeSocket = io(API, { auth: { token: keycloak.token } });
     setSocket(activeSocket);
 
     activeSocket.on("newMessage", (newMessage) => {
@@ -97,30 +97,27 @@ export const SocketProvider = ({ children, handleSelectChat }) => {
         };
       });
 
-      // Guard: preferences may not be loaded yet for this user/sender.
+      // Muted senders get no sound AND no desktop notification (this was the bug —
+      // notify() used to run unconditionally). Default to muted when the preference
+      // isn't loaded yet, matching the server's default.
       const muted =
-        muteRef.current?.[userRef.current?.name]?.[newMessage.sender];
+        muteRef.current?.[userRef.current?.name]?.[newMessage.sender] ?? true;
       if (!muted) {
         new Audio("/sound.mp3").play().catch(() => {});
+        notify(newMessage, handleSelectRef.current);
       }
-
-      notify(newMessage, handleSelectRef.current);
     });
 
     return () => {
       activeSocket.disconnect();
       setSocket(null);
     };
-  }, [token]);
+  }, [authed]);
 
   const markAsRead = async (sender) => {
     try {
-      await fetch(`${API}/messages/mark-as-read`, {
+      await authFetch("/messages/mark-as-read", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
         body: JSON.stringify({ sender }),
       });
       setState((prev) => ({
