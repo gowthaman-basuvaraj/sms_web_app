@@ -1,71 +1,35 @@
-import { useState } from "react";
 import ChatList from "./ChatList";
 import ChatDetails from "./ChatDetails";
 import { useDispatch, useSelector } from "react-redux";
-import {
-  setImageURL,
-  setSelectedChat,
-  fetchUserPreferences,
-} from "../store/Store";
+import { setImageURL, setSelectedChat, fetchUserPreferences } from "../store/Store";
 
 export default function Chat() {
-  const [state, setState] = useState({
-    chatListWidth: 450,
-  });
   const dispatch = useDispatch();
-  const { user, token } = useSelector((state) => state.auth);
+  const { user, selectedChat } = useSelector((state) => state.auth);
 
   const handleSelectChat = (chat, imageURL) => {
     dispatch(setSelectedChat(chat));
     dispatch(setImageURL(imageURL));
-    const userName = user.name;
-    const sender = chat.sender;
-    console.log("Selected chat in App:", sender, "user is: ", userName);
-    dispatch(fetchUserPreferences({ userName, sender, token }));
+    dispatch(fetchUserPreferences({ userName: user.name, sender: chat.sender }));
   };
 
-  const handleResize = (e) => {
-    const newWidth = Math.min(
-      Math.max(200, e.clientX), // Minimum width is 200px
-      window.innerWidth * 0.5 // Maximum width is 50% of the screen
-    );
-    setState((prevState) => ({
-      ...prevState,
-      chatListWidth: newWidth,
-    }));
-  };
+  const hasSelection = Boolean(selectedChat && selectedChat.id !== 0);
+
   return (
-    <>
+    <div className="flex h-full w-full overflow-hidden">
+      {/* List: full width on mobile (hidden once a chat is open); fixed sidebar on md+. */}
       <div
-        className="grid grid-cols-[auto_1fr] h-full"
-        style={{
-          gridTemplateColumns: `${state.chatListWidth}px 1fr`,
-        }}
+        className={`${
+          hasSelection ? "hidden" : "flex"
+        } w-full md:flex md:w-[360px] md:flex-shrink-0 md:border-r md:border-gray-700`}
       >
-        {/* Chat List */}
-        <div className="relative h-full">
-          <ChatList onSelectChat={handleSelectChat} />
-          <div
-            className="absolute top-0 right-0 h-full w-1 cursor-col-resize bg-gray-300 hover:bg-gray-400"
-            onMouseDown={(e) => {
-              e.preventDefault();
-              document.addEventListener("mousemove", handleResize);
-              document.addEventListener("mouseup", () =>
-                document.removeEventListener("mousemove", handleResize)
-              );
-            }}
-          ></div>
-        </div>
-
-        <div
-          className="h-full"
-          style={{
-            width: `calc(100vw - ${state.chatListWidth}px)`,
-          }}
-        >
-          <ChatDetails />
-        </div>
+        <ChatList onSelectChat={handleSelectChat} />
       </div>
-    </>
+
+      {/* Details: shown on mobile only when a chat is open; always shown on md+. */}
+      <div className={`${hasSelection ? "flex" : "hidden"} md:flex flex-1 min-w-0`}>
+        <ChatDetails />
+      </div>
+    </div>
   );
 }

@@ -40,7 +40,7 @@ const App = () => {
         <HandleAccess />
         <div className="flex flex-col h-screen">
           <Navbar />
-          <div className="flex flex-grow">
+          <div className="flex flex-1 min-h-0">
             <Routes>
               {haveAccess ? (
                 <>
