@@ -9,6 +9,8 @@ import Toggle from "../UI/Toggle";
 import { useNavigate } from "react-router-dom";
 import { authFetch } from "../lib/api";
 
+const PAGE_SIZE = 100;
+
 const ChatDetails = () => {
   const { socket } = useSocket();
   const { selectedChat, imageURL } = useSelector((state) => state.auth);
@@ -19,11 +21,14 @@ const ChatDetails = () => {
     searchQuery: "",
     copiedOTPMessageId: null,
     isLoading: false,
+    hasMore: false,
+    loadingMore: false,
   });
 
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const loadedSenderRef = useRef(null);
+  const loadingMoreRef = useRef(false);
 
   const handleOnCloseChat = () => {
     dispatch(
@@ -52,6 +57,7 @@ const ChatDetails = () => {
     const fetchMessages = async () => {
       const senderChanged = loadedSenderRef.current !== selectedChat.sender;
       loadedSenderRef.current = selectedChat.sender;
+      loadingMoreRef.current = false;
       // On a real sender switch, clear so we never show the previous sender's messages.
       // On a same-sender refresh, keep them until the new ones arrive (no blank). Either
       // way isLoading suppresses the "Not found" placeholder during the brief swap.
@@ -61,10 +67,11 @@ const ChatDetails = () => {
         error: null,
         copiedOTPMessageId: null,
         isLoading: true,
+        hasMore: false,
       }));
       try {
         const response = await authFetch(
-          `/messages?sender=${encodeURIComponent(selectedChat.sender)}`
+          `/messages?sender=${encodeURIComponent(selectedChat.sender)}&limit=${PAGE_SIZE}`
         );
         const data = await response.json();
 
@@ -75,6 +82,7 @@ const ChatDetails = () => {
             error: null,
             copiedOTPMessageId: null,
             isLoading: false,
+            hasMore: data.messages.length === PAGE_SIZE,
           }));
         } else {
           throw new Error("Unexpected data format");
@@ -96,9 +104,10 @@ const ChatDetails = () => {
     if (socket) {
       const handleNewMessage = (newMessage) => {
         if (newMessage.sender === selectedChat.sender) {
+          // Newest first (top).
           setState((prevState) => ({
             ...prevState,
-            messages: [...prevState.messages, newMessage],
+            messages: [newMessage, ...prevState.messages],
             error: null,
             copiedOTPMessageId: null,
           }));
@@ -118,6 +127,39 @@ const ChatDetails = () => {
       ...prevState,
       searchQuery: event.target.value,
     }));
+  };
+
+  // Fetch the next older page (messages are newest-first, so older ones append at the end).
+  const loadOlder = async () => {
+    if (loadingMoreRef.current || !state.hasMore) return;
+    const oldest = state.messages[state.messages.length - 1];
+    if (!oldest?.id) return;
+    loadingMoreRef.current = true;
+    setState((p) => ({ ...p, loadingMore: true }));
+    try {
+      const res = await authFetch(
+        `/messages?sender=${encodeURIComponent(selectedChat.sender)}&limit=${PAGE_SIZE}&before=${oldest.id}`
+      );
+      const data = await res.json();
+      const older = Array.isArray(data.messages) ? data.messages : [];
+      setState((p) => ({
+        ...p,
+        messages: [...p.messages, ...older],
+        hasMore: older.length === PAGE_SIZE,
+        loadingMore: false,
+      }));
+    } catch (err) {
+      console.error("Failed to load older messages:", err);
+      setState((p) => ({ ...p, loadingMore: false }));
+    } finally {
+      loadingMoreRef.current = false;
+    }
+  };
+
+  const handleScroll = (event) => {
+    if (state.searchQuery || !state.hasMore || loadingMoreRef.current) return;
+    const el = event.currentTarget;
+    if (el.scrollHeight - el.scrollTop - el.clientHeight < 150) loadOlder();
   };
 
   const filteredChats = state.messages.filter((msg) => {
@@ -228,7 +270,10 @@ const ChatDetails = () => {
               <IoCloseSharp className="font-bold text-3xl" />
             </button>
           </div>
-          <div className="flex-grow min-h-0 overflow-y-auto p-4 bg-gray-800">
+          <div
+            className="flex-grow min-h-0 overflow-y-auto p-4 bg-gray-800"
+            onScroll={handleScroll}
+          >
             {messagesToDisplay.length === 0 ? (
               state.isLoading ? null : (
                 <div className="mt-2 text-lg font-bold text-center">
@@ -279,6 +324,19 @@ const ChatDetails = () => {
                   </div>
                 );
               })
+            )}
+
+            {/* Load older messages (they append below, since newest is on top). */}
+            {!state.searchQuery && state.hasMore && (
+              <div className="py-3 text-center">
+                <button
+                  onClick={loadOlder}
+                  disabled={state.loadingMore}
+                  className="text-sm text-gray-300 hover:text-white disabled:opacity-50"
+                >
+                  {state.loadingMore ? "Loading…" : "Load older messages"}
+                </button>
+              </div>
             )}
           </div>
         </div>
