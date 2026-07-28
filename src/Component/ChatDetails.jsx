@@ -8,6 +8,7 @@ import { setImageURL, setSelectedChat } from "../store/Store";
 import Toggle from "../UI/Toggle";
 import { useNavigate } from "react-router-dom";
 import { authFetch } from "../lib/api";
+import { formatStamp } from "../lib/time";
 
 const PAGE_SIZE = 100;
 
@@ -294,7 +295,7 @@ const ChatDetails = () => {
                   >
                     {message.sentStamp && (
                       <p className="text-md mb-1 text-right text-white">
-                        {message.sentStamp}
+                        {formatStamp(message.sentStamp)}
                       </p>
                     )}
                     <p className="text-lg">{message.text}</p>
