@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { FaClipboard, FaClipboardCheck } from "react-icons/fa";
 import { authFetch } from "../lib/api";
 import { extractOtp } from "../lib/otp";
+import { formatStamp } from "../lib/time";
 import { useSocket } from "./SocketProvider";
 import Avatar, { HandleAvatar } from "../UI/Avatar";
 import { setImageURL, setSelectedChat } from "../store/Store";
@@ -95,7 +96,7 @@ export default function AllMessages() {
                       {m.sender}
                     </strong>
                     <span className="shrink-0 text-xs text-gray-400">
-                      {m.sentStamp}
+                      {formatStamp(m.sentStamp)}
                     </span>
                   </div>
                   <p className="mt-0.5 break-words">{m.text}</p>
