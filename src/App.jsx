@@ -5,6 +5,7 @@ import { HandleAccess } from "./store/AccessHandle";
 import { useDispatch, useSelector } from "react-redux";
 import { setImageURL, setSelectedChat, fetchAllSenderMutePreferences } from "./store/Store";
 import Chat from "./Component/Chat";
+import AllMessages from "./Component/AllMessages";
 import { useEffect } from "react";
 import Loader from "./Component/Loader";
 
@@ -45,6 +46,7 @@ const App = () => {
               {haveAccess ? (
                 <>
                   <Route path="/" element={<Chat />} />
+                  <Route path="/all" element={<AllMessages />} />
                   <Route path="*" element={<Navigate to="/" />} />
                 </>
               ) : (
