@@ -1,5 +1,6 @@
 import { FaRegUserCircle } from "react-icons/fa";
 import { NavLink } from "react-router-dom";
+import StatusIndicator from "./StatusIndicator";
 import { Select, SelectContent, SelectTrigger } from "../UI/select";
 import { useSelector } from "react-redux";
 import { Logout } from "../store/Auth";
@@ -52,7 +53,8 @@ const Navbar = () => {
             </NavLink>
           </div>
         </div>
-        <div className="flex items-center space-x-2">
+        <div className="flex items-center gap-3">
+          <StatusIndicator />
           <Select className="flex text-white justify-between gap-5">
             <SelectTrigger>
               <div className="flex items-center space-x-2 pr-3">

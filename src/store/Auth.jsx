@@ -3,6 +3,7 @@ import PropTypes from "prop-types";
 import { useDispatch } from "react-redux";
 import { setToken, setRefreshToken, setKeyclock } from "./Store";
 import { keycloak } from "../lib/keycloak";
+import { markSessionExpired, resetSession } from "../lib/session";
 
 // Guard against a second init (React StrictMode / fast refresh).
 let initStarted = false;
@@ -42,15 +43,19 @@ export const Auth = ({ children }) => {
         if (!authenticated) return;
         publish();
         // Mirror EVERY successful refresh into the store (incl. refreshes triggered by
-        // authFetch), so the socket handshake token stays current too.
-        keycloak.onAuthRefreshSuccess = publish;
-        keycloak.onTokenExpired = () => {
-          keycloak.updateToken(30).catch(() => keycloak.login());
+        // authFetch), so the socket handshake token stays current too, and clear any
+        // "session expired" flag.
+        keycloak.onAuthRefreshSuccess = () => {
+          publish();
+          resetSession();
         };
-        // Safety net: refresh proactively so an idle/backgrounded tab never lands on a
-        // 401 (the onTokenExpired timer alone is unreliable when throttled).
+        keycloak.onTokenExpired = () => {
+          keycloak.updateToken(30).catch(() => markSessionExpired());
+        };
+        // Safety net: refresh proactively so an idle/backgrounded tab surfaces expiry even
+        // without any API call (the onTokenExpired timer alone is unreliable when throttled).
         refreshTimer = setInterval(() => {
-          keycloak.updateToken(70).catch(() => keycloak.login());
+          keycloak.updateToken(70).catch(() => markSessionExpired());
         }, 60000);
       })
       .catch((error) => {
