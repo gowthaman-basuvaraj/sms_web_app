@@ -1,4 +1,5 @@
 import { FaRegUserCircle } from "react-icons/fa";
+import { NavLink } from "react-router-dom";
 import { Select, SelectContent, SelectTrigger } from "../UI/select";
 import { useSelector } from "react-redux";
 import { Logout } from "../store/Auth";
@@ -29,8 +30,27 @@ const Navbar = () => {
   return (
     <nav className="bg-gray-950 text-white p-3">
       <div className="flex justify-between items-center">
-        <div className="flex items-center space-x-4">
-          <span className="text-xl font-bold">SMS Web App</span>
+        <div className="flex items-center gap-3">
+          <span className="hidden sm:inline text-xl font-bold">SMS Web App</span>
+          <div className="flex items-center gap-1 text-sm">
+            <NavLink
+              to="/"
+              end
+              className={({ isActive }) =>
+                `px-3 py-1 rounded ${isActive ? "bg-gray-700" : "hover:bg-gray-800"}`
+              }
+            >
+              Chats
+            </NavLink>
+            <NavLink
+              to="/all"
+              className={({ isActive }) =>
+                `px-3 py-1 rounded ${isActive ? "bg-gray-700" : "hover:bg-gray-800"}`
+              }
+            >
+              All
+            </NavLink>
+          </div>
         </div>
         <div className="flex items-center space-x-2">
           <Select className="flex text-white justify-between gap-5">
