@@ -6,6 +6,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { setImageURL, setSelectedChat, fetchAllSenderMutePreferences } from "./store/Store";
 import Chat from "./Component/Chat";
 import AllMessages from "./Component/AllMessages";
+import SessionExpiredOverlay from "./Component/SessionExpiredOverlay";
 import { useEffect } from "react";
 import Loader from "./Component/Loader";
 
@@ -39,6 +40,7 @@ const App = () => {
     <SocketProvider handleSelectChat={handleSelectChat}>
       <Router>
         <HandleAccess />
+        <SessionExpiredOverlay />
         <div className="flex flex-col h-screen">
           <Navbar />
           <div className="flex flex-1 min-h-0">

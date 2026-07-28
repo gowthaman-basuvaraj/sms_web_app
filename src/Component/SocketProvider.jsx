@@ -26,6 +26,7 @@ export const SocketProvider = ({ children, handleSelectChat }) => {
     unreadCount: {},
   });
   const [socket, setSocket] = useState(null);
+  const [connected, setConnected] = useState(false);
 
   const { mutePreferences, user, token } = useSelector((state) => state.auth);
 
@@ -79,6 +80,10 @@ export const SocketProvider = ({ children, handleSelectChat }) => {
     // handshake, so we don't reconnect on every token refresh.
     const activeSocket = io(API, { auth: { token: keycloak.token } });
     setSocket(activeSocket);
+    setConnected(activeSocket.connected);
+    activeSocket.on("connect", () => setConnected(true));
+    activeSocket.on("disconnect", () => setConnected(false));
+    activeSocket.on("connect_error", () => setConnected(false));
 
     activeSocket.on("newMessage", (newMessage) => {
       setState((prev) => {
@@ -111,6 +116,7 @@ export const SocketProvider = ({ children, handleSelectChat }) => {
     return () => {
       activeSocket.disconnect();
       setSocket(null);
+      setConnected(false);
     };
   }, [authed]);
 
@@ -133,7 +139,7 @@ export const SocketProvider = ({ children, handleSelectChat }) => {
   };
 
   return (
-    <SocketContext.Provider value={{ ...state, socket, markAsRead }}>
+    <SocketContext.Provider value={{ ...state, socket, connected, markAsRead }}>
       {children}
     </SocketContext.Provider>
   );
