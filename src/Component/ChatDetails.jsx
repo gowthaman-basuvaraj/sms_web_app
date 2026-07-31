@@ -9,6 +9,7 @@ import Toggle from "../UI/Toggle";
 import { useNavigate } from "react-router-dom";
 import { authFetch } from "../lib/api";
 import { formatStamp } from "../lib/time";
+import Linkify from "../UI/Linkify";
 
 const PAGE_SIZE = 100;
 
@@ -298,7 +299,9 @@ const ChatDetails = () => {
                         {formatStamp(message.sentStamp)}
                       </p>
                     )}
-                    <p className="text-lg">{message.text}</p>
+                    <p className="text-lg">
+                      <Linkify text={message.text} />
+                    </p>
                     {message.sim && (
                       <p className="text-md text-gray-300 mt-1">
                         <strong>SIM:</strong> {message.sim}
