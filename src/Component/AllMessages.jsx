@@ -7,6 +7,7 @@ import { extractOtp } from "../lib/otp";
 import { formatStamp } from "../lib/time";
 import { useSocket } from "./SocketProvider";
 import Avatar, { HandleAvatar } from "../UI/Avatar";
+import Linkify from "../UI/Linkify";
 import { setImageURL, setSelectedChat } from "../store/Store";
 import Loader from "./Loader";
 
@@ -99,7 +100,9 @@ export default function AllMessages() {
                       {formatStamp(m.sentStamp)}
                     </span>
                   </div>
-                  <p className="mt-0.5 break-words">{m.text}</p>
+                  <p className="mt-0.5 break-words">
+                    <Linkify text={m.text} />
+                  </p>
                   {otp && (
                     <button
                       onClick={() => copyOtp(otp, key)}
