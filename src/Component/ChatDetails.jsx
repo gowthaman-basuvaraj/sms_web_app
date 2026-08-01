@@ -10,6 +10,7 @@ import { useNavigate } from "react-router-dom";
 import { authFetch } from "../lib/api";
 import { formatStamp } from "../lib/time";
 import Linkify from "../UI/Linkify";
+import RetentionSelect from "./RetentionSelect";
 
 const PAGE_SIZE = 100;
 
@@ -260,6 +261,7 @@ const ChatDetails = () => {
               />
               <FaSearch className="absolute left-2 top-1/2 transform -translate-y-1/2 text-gray-400" />
             </div>
+            <RetentionSelect sender={selectedChat.sender} />
             <div className="shrink-0">
               <Toggle />
             </div>
