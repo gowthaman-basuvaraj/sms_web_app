@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import PropTypes from "prop-types";
-import { FaSearch } from "react-icons/fa";
+import { FaSearch, FaTrash } from "react-icons/fa";
 import Loader from "./Loader";
 import { useSocket } from "./SocketProvider";
 import Avatar, { HandleAvatar } from "../UI/Avatar";
@@ -9,8 +9,10 @@ import { setSelectedChat, setImageURL } from "../store/Store";
 import { useNavigate, useLocation } from "react-router-dom";
 
 const ChatList = ({ onSelectChat }) => {
-  const { chats, loading, error, markAsRead, unreadCount } = useSocket();
+  const { chats, loading, error, markAsRead, unreadCount, deleteSender } =
+    useSocket();
   const [searchQuery, setSearchQuery] = useState("");
+  const [deletingSender, setDeletingSender] = useState(null);
   const { selectedChat } = useSelector((state) => state.auth);
   const dispatch = useDispatch();
   const navigate = useNavigate();
@@ -35,6 +37,27 @@ const ChatList = ({ onSelectChat }) => {
     markAsRead(chat.sender);
     onSelectChat(chat, imageURL);
     navigate(`?chatId=${chat.id}&sender=${chat.sender}`);
+  };
+
+  // Deleting a sender drops its whole history server-side, so confirm first.
+  const handleDeleteChat = async (event, chat) => {
+    event.stopPropagation();
+
+    const confirmed = window.confirm(
+      `Delete all messages from "${chat.sender}"? This cannot be undone.`
+    );
+    if (!confirmed) return;
+
+    setDeletingSender(chat.sender);
+    const deleted = await deleteSender(chat.sender);
+    setDeletingSender(null);
+
+    if (!deleted) {
+      window.alert(`Failed to delete "${chat.sender}". Please try again.`);
+      return;
+    }
+
+    if (chat.sender === selectedChat.sender) navigate("/");
   };
 
   const filteredChats = chats.filter(
@@ -75,7 +98,7 @@ const ChatList = ({ onSelectChat }) => {
             <div
               key={chat.id}
               onClick={() => handleSelectChat(chat, HandleAvatar(chat.sender))}
-              className={`p-3 flex items-center gap-3 cursor-pointer ${
+              className={`group p-3 flex items-center gap-3 cursor-pointer ${
                 chat.id === selectedChat.id ? "bg-gray-700" : ""
               } hover:bg-gray-800`}
             >
@@ -93,6 +116,16 @@ const ChatList = ({ onSelectChat }) => {
                   {chat.text}
                 </span>
               </div>
+              <button
+                type="button"
+                title={`Delete ${chat.sender}`}
+                aria-label={`Delete ${chat.sender}`}
+                disabled={deletingSender === chat.sender}
+                onClick={(event) => handleDeleteChat(event, chat)}
+                className="shrink-0 p-2 text-gray-400 opacity-0 group-hover:opacity-100 focus:opacity-100 hover:text-red-500 disabled:opacity-50"
+              >
+                <FaTrash />
+              </button>
             </div>
           ))
         )}
