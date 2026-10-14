@@ -8,7 +8,8 @@ import {
 import io from "socket.io-client";
 import PropTypes from "prop-types";
 import { HandleAvatar } from "../UI/Avatar";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
+import { setImageURL, setSelectedChat } from "../store/Store";
 import { authFetch } from "../lib/api";
 import { keycloak } from "../lib/keycloak";
 
@@ -28,16 +29,40 @@ export const SocketProvider = ({ children, handleSelectChat }) => {
   const [socket, setSocket] = useState(null);
   const [connected, setConnected] = useState(false);
 
-  const { mutePreferences, user, token } = useSelector((state) => state.auth);
+  const { mutePreferences, user, token, selectedChat } = useSelector(
+    (state) => state.auth
+  );
+  const dispatch = useDispatch();
 
   // Keep the latest values available to the long-lived socket handler without
   // resubscribing (which would reconnect the socket on every store change).
   const muteRef = useRef(mutePreferences);
   const userRef = useRef(user);
   const handleSelectRef = useRef(handleSelectChat);
+  const selectedChatRef = useRef(selectedChat);
   muteRef.current = mutePreferences;
   userRef.current = user;
   handleSelectRef.current = handleSelectChat;
+  selectedChatRef.current = selectedChat;
+
+  // Drop a sender from the list locally, and close it if it's the open chat. Used both by
+  // our own delete and by the server's "senderDeleted" broadcast (another client's delete).
+  const removeSender = useRef((sender) => {
+    setState((prev) => {
+      const unreadCount = { ...prev.unreadCount };
+      delete unreadCount[sender];
+      return {
+        ...prev,
+        chats: prev.chats.filter((chat) => chat.sender !== sender),
+        unreadCount,
+      };
+    });
+
+    if (selectedChatRef.current?.sender === sender) {
+      dispatch(setSelectedChat({ id: 0, sender: "", sim: "", mute: true }));
+      dispatch(setImageURL(""));
+    }
+  }).current;
 
   const authed = Boolean(token);
 
@@ -113,12 +138,14 @@ export const SocketProvider = ({ children, handleSelectChat }) => {
       }
     });
 
+    activeSocket.on("senderDeleted", ({ sender }) => removeSender(sender));
+
     return () => {
       activeSocket.disconnect();
       setSocket(null);
       setConnected(false);
     };
-  }, [authed]);
+  }, [authed, removeSender]); // removeSender is ref-stable; no reconnect churn
 
   const markAsRead = async (sender) => {
     try {
@@ -138,8 +165,30 @@ export const SocketProvider = ({ children, handleSelectChat }) => {
     }
   };
 
+  // Deletes the sender server-side (messages, mute preferences, retention rule). The
+  // server broadcasts "senderDeleted", but we also update here so the caller sees it
+  // immediately even if the socket is down.
+  const deleteSender = async (sender) => {
+    try {
+      const res = await authFetch(`/sender?sender=${encodeURIComponent(sender)}`, {
+        method: "DELETE",
+      });
+      const data = await res.json();
+      if (data.status !== "success") {
+        throw new Error(data.message || "Failed to delete sender");
+      }
+      removeSender(sender);
+      return true;
+    } catch (error) {
+      console.error("Failed to delete sender:", error);
+      return false;
+    }
+  };
+
   return (
-    <SocketContext.Provider value={{ ...state, socket, connected, markAsRead }}>
+    <SocketContext.Provider
+      value={{ ...state, socket, connected, markAsRead, deleteSender }}
+    >
       {children}
     </SocketContext.Provider>
   );
